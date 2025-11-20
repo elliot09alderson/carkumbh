@@ -12,15 +12,8 @@ const Index = () => {
     // Try to unmute video after 0.5 seconds
     const timer = setTimeout(() => {
       if (videoRef.current) {
+        // Just unmute - don't call play() again since video is already playing
         videoRef.current.muted = false;
-        // Try to play with sound (may be blocked by browser)
-        videoRef.current.play().catch((error) => {
-          console.log("Autoplay with sound blocked:", error);
-          // If blocked, keep muted
-          if (videoRef.current) {
-            videoRef.current.muted = true;
-          }
-        });
       }
     }, 500);
 
