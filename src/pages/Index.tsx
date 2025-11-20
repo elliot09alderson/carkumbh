@@ -1,16 +1,38 @@
 import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
 import BookingForm from "@/components/BookingForm";
 import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import { Car } from "lucide-react";
 
 const Index = () => {
   useSmoothScroll();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    // Try to unmute video after 0.5 seconds
+    const timer = setTimeout(() => {
+      if (videoRef.current) {
+        videoRef.current.muted = false;
+        // Try to play with sound (may be blocked by browser)
+        videoRef.current.play().catch((error) => {
+          console.log("Autoplay with sound blocked:", error);
+          // If blocked, keep muted
+          if (videoRef.current) {
+            videoRef.current.muted = true;
+          }
+        });
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="min-h-screen relative">
       {/* Video Section */}
       <section className="w-full h-[40vh] md:h-[50vh] overflow-hidden relative">
         <video
+          ref={videoRef}
           autoPlay
           loop
           muted
