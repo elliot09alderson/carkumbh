@@ -19,7 +19,7 @@ const Index = () => {
   return (
     <div className="min-h-screen relative">
       {/* Video Section */}
-      <section className="w-full h-[40vh] md:h-[50vh] overflow-hidden relative">
+      <section className="w-full h-[60vh] md:h-[70vh] overflow-hidden relative">
         <video
           ref={videoRef}
           autoPlay
