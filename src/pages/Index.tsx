@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import BookingForm from "@/components/BookingForm";
 import { useSmoothScroll } from "@/hooks/useSmoothScroll";
-import { Car } from "lucide-react";
+import { Car, Volume2, VolumeX } from "lucide-react";
 
 const Index = () => {
   useSmoothScroll();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
     // Try to unmute video after 0.5 seconds
@@ -14,11 +15,19 @@ const Index = () => {
       if (videoRef.current) {
         // Just unmute - don't call play() again since video is already playing
         videoRef.current.muted = false;
+        setIsMuted(false);
       }
     }, 500);
 
     return () => clearTimeout(timer);
   }, []);
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
+    }
+  };
 
   return (
     <div className="min-h-screen relative">
@@ -30,11 +39,23 @@ const Index = () => {
           loop
           muted
           playsInline
-          controls
           className="w-full h-full object-cover"
         >
           <source src="/horilal-trailer.mp4" type="video/mp4" />
         </video>
+
+        {/* Sound Toggle Button */}
+        <button
+          onClick={toggleMute}
+          className="absolute bottom-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-110 z-10"
+          aria-label={isMuted ? "Unmute video" : "Mute video"}
+        >
+          {isMuted ? (
+            <VolumeX className="w-6 h-6" />
+          ) : (
+            <Volume2 className="w-6 h-6" />
+          )}
+        </button>
       </section>
 
       <div className="relative">
