@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import VideoBackground from "@/components/VideoBackground";
 import BookingForm from "@/components/BookingForm";
 import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import { Car } from "lucide-react";
@@ -9,11 +8,22 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative">
-      <VideoBackground />
+      {/* Video Section */}
+      <section className="w-full h-[40vh] md:h-[50vh] overflow-hidden">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+        >
+          <source src="/horilal-trailer.mp4" type="video/mp4" />
+        </video>
+      </section>
 
-      <div className="relative z-20">
+      <div className="relative">
         {/* Hero Section */}
-        <section className="min-h-screen flex flex-col items-center justify-center px-4 py-20">
+        <section className="min-h-screen flex flex-col items-center justify-center px-4 py-20 bg-background">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
