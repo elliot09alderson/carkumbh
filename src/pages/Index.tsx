@@ -47,7 +47,7 @@ const Index = () => {
 
       <div className="relative">
         {/* Hero Section */}
-        <section className="min-h-screen flex flex-col items-center justify-center px-4 py-20 bg-background">
+        <section className="min-h-[40vh] md:min-h-screen flex flex-col items-center justify-center px-4 py-12 md:py-20 bg-background">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
