@@ -35,6 +35,17 @@ const BookingForm = () => {
       return;
     }
 
+    // Validate phone number - must be exactly 10 digits
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(formData.number)) {
+      toast({
+        title: "Error",
+        description: "Phone number must be exactly 10 digits",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (formData.paymentMode === 'online' && !formData.screenshot) {
       toast({
         title: "Error",
@@ -99,25 +110,27 @@ const BookingForm = () => {
             <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary animate-pulse" />
             <h3 className="text-2xl font-bold mb-2">Booking Confirmed!</h3>
             <p className="text-muted-foreground mb-4">Your confirmation token:</p>
-            <div className="inline-block bg-secondary/50 px-8 py-4 rounded-lg border-2 border-primary shadow-glow">
+            <div className="bg-secondary/50 px-8 py-4 rounded-lg border-2 border-primary shadow-glow inline-block mb-6">
               <span className="text-4xl font-mono font-bold tracking-wider text-primary">{token}</span>
             </div>
-            <Button 
-              onClick={() => {
-                setToken('');
-                setFormData({
-                  name: '',
-                  number: '',
-                  address: '',
-                  package: '499',
-                  paymentMode: 'cash',
-                  screenshot: null,
-                });
-              }}
-              className="mt-6 bg-primary hover:bg-primary/90"
-            >
-              New Booking
-            </Button>
+            <div>
+              <Button
+                onClick={() => {
+                  setToken('');
+                  setFormData({
+                    name: '',
+                    number: '',
+                    address: '',
+                    package: '499',
+                    paymentMode: 'cash',
+                    screenshot: null,
+                  });
+                }}
+                className="bg-primary hover:bg-primary/90"
+              >
+                New Booking
+              </Button>
+            </div>
           </motion.div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -144,10 +157,17 @@ const BookingForm = () => {
               <Label htmlFor="number" className="text-foreground">Phone Number</Label>
               <Input
                 id="number"
+                type="tel"
                 value={formData.number}
-                onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '');
+                  if (value.length <= 10) {
+                    setFormData({ ...formData, number: value });
+                  }
+                }}
                 className="mt-2 bg-secondary/50 border-border/50 focus:border-primary"
-                placeholder="Enter your phone number"
+                placeholder="Enter 10 digit phone number"
+                maxLength={10}
               />
             </motion.div>
 
