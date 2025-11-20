@@ -25,7 +25,7 @@ const VideoBackground = () => {
         ref={videoRef}
         autoPlay
         loop
-        muted
+        // muted
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
       >
