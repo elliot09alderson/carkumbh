@@ -16,11 +16,11 @@ const VideoBackground = () => {
         ref={videoRef}
         autoPlay
         loop
-        // muted
+        muted
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
       >
-        <source src="/HORILAL TRAILER.mp4" type="video/mp4" />
+        <source src="/horilal-trailer.mp4" type="video/mp4" />
       </video>
 
       {/* Dark overlay */}
