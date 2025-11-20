@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import BookingForm from "@/components/BookingForm";
 import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import { Car, Volume2, VolumeX } from "lucide-react";
@@ -8,19 +8,6 @@ const Index = () => {
   useSmoothScroll();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
-
-  useEffect(() => {
-    // Try to unmute video after 0.5 seconds
-    const timer = setTimeout(() => {
-      if (videoRef.current) {
-        // Just unmute - don't call play() again since video is already playing
-        videoRef.current.muted = false;
-        setIsMuted(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   const toggleMute = () => {
     if (videoRef.current) {
