@@ -120,6 +120,11 @@ const Index = () => {
               viewport={{ once: true }}
               className="text-center mb-12"
             >
+              <img
+                src="/eventBanner.jpeg"
+                alt="Car Kumbh Event Banner"
+                className="mx-auto mb-8 max-w-full h-auto rounded-lg shadow-lg"
+              />
               <h2 className="text-4xl md:text-5xl font-bold mb-4">
                 Secure Your Entry
               </h2>

@@ -19,46 +19,49 @@ const VideoBackground = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden">
-      {/* Video element */}
-      <video
-        ref={videoRef}
-        autoPlay
-        loop
-        // muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-      >
-        <source src="/horilal-trailer.mp4" type="video/mp4" />
-      </video>
+    <div className="relative w-full z-0 bg-black">
+      {/* 16:9 aspect ratio container */}
+      <div className="relative w-full aspect-video">
+        {/* Video element */}
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-contain bg-black"
+        >
+          <source src="/horilal-trailer.mp4" type="video/mp4" />
+        </video>
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/60 z-10" />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/60 z-10" />
 
-      {/* Vignette effect - radial gradient from center to edges */}
-      <div
-        className="absolute inset-0 z-20"
-        style={{
-          background:
-            "radial-gradient(circle at center, transparent 0%, transparent 40%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0.8) 100%)",
-        }}
-      />
+        {/* Vignette effect - radial gradient from center to edges */}
+        <div
+          className="absolute inset-0 z-20"
+          style={{
+            background:
+              "radial-gradient(circle at center, transparent 0%, transparent 40%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0.8) 100%)",
+          }}
+        />
 
-      {/* Gradient overlay for content readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background z-30" />
+        {/* Gradient overlay for content readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background z-30" />
 
-      {/* Audio control button */}
-      <button
-        onClick={toggleMute}
-        className="fixed bottom-8 right-8 z-50 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-110"
-        aria-label={isMuted ? "Unmute video" : "Mute video"}
-      >
-        {isMuted ? (
-          <VolumeX className="w-6 h-6" />
-        ) : (
-          <Volume2 className="w-6 h-6" />
-        )}
-      </button>
+        {/* Audio control button */}
+        <button
+          onClick={toggleMute}
+          className="absolute bottom-4 right-4 z-50 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-110"
+          aria-label={isMuted ? "Unmute video" : "Mute video"}
+        >
+          {isMuted ? (
+            <VolumeX className="w-6 h-6" />
+          ) : (
+            <Volume2 className="w-6 h-6" />
+          )}
+        </button>
+      </div>
     </div>
   );
 };
