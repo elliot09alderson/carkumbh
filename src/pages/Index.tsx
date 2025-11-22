@@ -19,14 +19,14 @@ const Index = () => {
   return (
     <div className="min-h-screen relative">
       {/* Video Section */}
-      <section className="w-full h-[60vh] md:h-[70vh] overflow-hidden relative">
+      <section className="w-full h-[40vh] md:h-[70vh] overflow-hidden relative">
         <video
           ref={videoRef}
           autoPlay
           loop
           muted
           playsInline
-          className="w-full h-full object-cover"
+          className="w-full h-full "
         >
           <source src="/horilal-trailer.mp4" type="video/mp4" />
         </video>
@@ -147,11 +147,11 @@ const Index = () => {
             className="max-w-7xl mx-auto text-center text-muted-foreground"
           >
             <p>© 2024 Car Kumbh. All rights reserved.</p>
-            <p className="mt-2">
+            {/* <p className="mt-2">
               <a href="/admin" className="text-primary hover:underline text-sm">
                 Admin Access
               </a>
-            </p>
+            </p> */}
           </motion.div>
         </footer>
       </div>
