@@ -1,14 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card } from "@/components/ui/card";
-import { Upload, Sparkles } from "lucide-react";
+import { Sparkles, CreditCard, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import upiQrCode from "@/assets/upi-qr.jpeg";
 import { createBooking } from "@/api/bookings";
+import { createOrder, verifyPayment } from "@/api/payments";
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+// Calculate convenience fee (2% MDR + 18% GST on MDR)
+const calculateConvenienceFee = (baseAmount: number): number => {
+  const mdr = baseAmount * 0.02;
+  const gst = mdr * 0.18;
+  return Math.round(mdr + gst);
+};
 
 const BookingForm = () => {
   const [formData, setFormData] = useState({
@@ -17,25 +30,39 @@ const BookingForm = () => {
     address: "",
     package: "499",
     paymentMode: "cash",
-    screenshot: null as File | null,
   });
   const [token, setToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    document.body.appendChild(script);
 
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const baseAmount = parseInt(formData.package);
+  const convenienceFee = calculateConvenienceFee(baseAmount);
+  const totalAmount = baseAmount + convenienceFee;
+
+  const validateForm = (): boolean => {
     if (!formData.name || !formData.number || !formData.address) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
-    // Validate phone number - must be exactly 10 digits
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(formData.number)) {
       toast({
@@ -43,24 +70,22 @@ const BookingForm = () => {
         description: "Phone number must be exactly 10 digits",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
-    if (formData.paymentMode === "online" && !formData.screenshot) {
-      toast({
-        title: "Error",
-        description: "Please upload payment verification screenshot",
-        variant: "destructive",
-      });
-      return;
-    }
+    return true;
+  };
+
+  const handleCashBooking = async () => {
+    if (!validateForm()) return;
 
     setIsLoading(true);
-
     try {
-      const booking = await createBooking(formData);
+      const booking = await createBooking({
+        ...formData,
+        screenshot: null,
+      });
       setToken(booking.token);
-
       toast({
         title: "Booking Confirmed!",
         description: `Your token: ${booking.token}`,
@@ -78,9 +103,107 @@ const BookingForm = () => {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData({ ...formData, screenshot: e.target.files[0] });
+  const handleOnlinePayment = async () => {
+    if (!validateForm()) return;
+
+    if (!razorpayLoaded) {
+      toast({
+        title: "Error",
+        description: "Payment gateway is loading. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Create order
+      const orderData = await createOrder({
+        name: formData.name,
+        number: formData.number,
+        address: formData.address,
+        package: formData.package,
+      });
+
+      // Configure Razorpay options
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Car Kumbh",
+        description: `Package ₹${formData.package} + Convenience Fee`,
+        order_id: orderData.orderId,
+        handler: async function (response: any) {
+          try {
+            // Verify payment
+            const verifyData = await verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              name: formData.name,
+              number: formData.number,
+              address: formData.address,
+              package: formData.package,
+            });
+
+            setToken(verifyData.token);
+            toast({
+              title: "Payment Successful!",
+              description: `Your token: ${verifyData.token}`,
+            });
+          } catch (error: any) {
+            toast({
+              title: "Payment Verification Failed",
+              description:
+                error.response?.data?.message ||
+                "Please contact support with your payment details.",
+              variant: "destructive",
+            });
+          }
+        },
+        prefill: {
+          name: formData.name,
+          contact: formData.number,
+        },
+        theme: {
+          color: "#f97316",
+        },
+        modal: {
+          ondismiss: function () {
+            setIsLoading(false);
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.on("payment.failed", function (response: any) {
+        toast({
+          title: "Payment Failed",
+          description: response.error.description || "Payment was not completed",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+      });
+      razorpay.open();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message ||
+          "Failed to initiate payment. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (formData.paymentMode === "cash") {
+      await handleCashBooking();
+    } else {
+      await handleOnlinePayment();
     }
   };
 
@@ -129,7 +252,6 @@ const BookingForm = () => {
                     address: "",
                     package: "499",
                     paymentMode: "cash",
-                    screenshot: null,
                   });
                 }}
                 className="bg-primary hover:bg-primary/90"
@@ -286,7 +408,10 @@ const BookingForm = () => {
                     id="payment-cash"
                     className="sr-only"
                   />
-                  <span className="font-semibold">Cash</span>
+                  <div className="flex items-center gap-2">
+                    <Wallet className="w-5 h-5" />
+                    <span className="font-semibold">Cash</span>
+                  </div>
                 </Label>
                 <Label
                   htmlFor="payment-online"
@@ -301,7 +426,10 @@ const BookingForm = () => {
                     id="payment-online"
                     className="sr-only"
                   />
-                  <span className="font-semibold">Online</span>
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="w-5 h-5" />
+                    <span className="font-semibold">Online</span>
+                  </div>
                 </Label>
               </RadioGroup>
             </motion.div>
@@ -312,46 +440,31 @@ const BookingForm = () => {
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-4"
+                className="bg-secondary/30 rounded-lg p-4 border border-border/50"
               >
-                <div>
-                  <Label className="text-foreground mb-3 block">
-                    Scan to Pay
-                  </Label>
-                  <div className="bg-white p-4 rounded-lg max-w-sm mx-auto">
-                    <img
-                      src={upiQrCode}
-                      alt="UPI Payment QR Code"
-                      className="w-full h-auto rounded-lg"
-                    />
+                <h4 className="font-semibold mb-3 text-foreground">
+                  Payment Summary
+                </h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Package Amount</span>
+                    <span className="font-medium">₹{baseAmount}</span>
                   </div>
-                </div>
-
-                <div>
-                  <Label className="text-foreground mb-2 block">
-                    Upload Payment Screenshot
-                  </Label>
-                  <div className="relative">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                      id="screenshot"
-                    />
-                    <Label
-                      htmlFor="screenshot"
-                      className="flex items-center justify-center p-6 border-2 border-dashed border-border/50 rounded-lg cursor-pointer hover:border-primary transition-all bg-secondary/30"
-                    >
-                      <div className="text-center">
-                        <Upload className="w-8 h-8 mx-auto mb-2 text-primary" />
-                        <span className="text-sm text-muted-foreground">
-                          {formData.screenshot
-                            ? formData.screenshot.name
-                            : "Upload Payment Screenshot"}
-                        </span>
-                      </div>
-                    </Label>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      Convenience Fee (2% + GST)
+                    </span>
+                    <span className="font-medium">₹{convenienceFee}</span>
+                  </div>
+                  <div className="border-t border-border/50 pt-2 mt-2">
+                    <div className="flex justify-between text-base">
+                      <span className="font-semibold text-foreground">
+                        Total Payable
+                      </span>
+                      <span className="font-bold text-primary">
+                        ₹{totalAmount}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -367,7 +480,11 @@ const BookingForm = () => {
                 disabled={isLoading}
                 className="w-full bg-gradient-primary hover:opacity-90 text-primary-foreground font-semibold py-6 text-lg shadow-glow"
               >
-                {isLoading ? "Processing..." : "Confirm Booking"}
+                {isLoading
+                  ? "Processing..."
+                  : formData.paymentMode === "online"
+                  ? `Pay ₹${totalAmount}`
+                  : "Confirm Booking"}
               </Button>
             </motion.div>
           </form>

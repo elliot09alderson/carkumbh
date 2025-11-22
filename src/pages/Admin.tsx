@@ -1,24 +1,45 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Download, LogOut } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  ArrowLeft,
+  Download,
+  LogOut,
+  Search,
+  FileSpreadsheet,
+  FileText,
+  Filter,
+} from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAllBookings, togglePaidStatus as apiTogglePaidStatus, Booking } from '@/api/bookings';
 import { useToast } from '@/hooks/use-toast';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const Admin = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [paymentFilter, setPaymentFilter] = useState('all');
+  const [packageFilter, setPackageFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const { isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Wait for auth state to be initialized before redirecting
     if (authLoading) return;
 
     if (!isAuthenticated) {
@@ -44,6 +65,36 @@ const Admin = () => {
     }
   };
 
+  // Filtered bookings based on search and filters
+  const filteredBookings = useMemo(() => {
+    return bookings.filter((booking) => {
+      // Search filter
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch =
+        !searchQuery ||
+        booking.name.toLowerCase().includes(searchLower) ||
+        booking.token.toLowerCase().includes(searchLower) ||
+        booking.number.includes(searchQuery) ||
+        booking.address.toLowerCase().includes(searchLower);
+
+      // Payment mode filter
+      const matchesPayment =
+        paymentFilter === 'all' || booking.paymentMode === paymentFilter;
+
+      // Package filter
+      const matchesPackage =
+        packageFilter === 'all' || booking.package === packageFilter;
+
+      // Status filter
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'paid' && booking.isPaid) ||
+        (statusFilter === 'pending' && !booking.isPaid);
+
+      return matchesSearch && matchesPayment && matchesPackage && matchesStatus;
+    });
+  }, [bookings, searchQuery, paymentFilter, packageFilter, statusFilter]);
+
   const togglePaidStatus = async (id: string) => {
     try {
       const updatedBooking = await apiTogglePaidStatus(id);
@@ -68,17 +119,79 @@ const Admin = () => {
     navigate('/admin-login');
   };
 
-  const exportData = () => {
-    const dataStr = JSON.stringify(bookings, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
+  const exportCSV = () => {
+    const headers = ['Token', 'Name', 'Phone', 'Address', 'Package', 'Payment Mode', 'Status', 'Date'];
+    const csvData = filteredBookings.map((b) => [
+      b.token,
+      b.name,
+      b.number,
+      `"${b.address.replace(/"/g, '""')}"`,
+      `₹${b.package}`,
+      b.paymentMode,
+      b.isPaid ? 'Paid' : 'Pending',
+      new Date(b.createdAt).toLocaleString(),
+    ]);
+
+    const csvContent = [headers.join(','), ...csvData.map((row) => row.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `car-kumbh-bookings-${Date.now()}.json`;
+    link.download = `car-kumbh-bookings-${Date.now()}.csv`;
     link.click();
+
+    toast({
+      title: "Exported",
+      description: `${filteredBookings.length} bookings exported as CSV`,
+    });
   };
 
-  // Show loading while checking authentication
+  const exportPDF = () => {
+    const doc = new jsPDF();
+
+    // Title
+    doc.setFontSize(20);
+    doc.text('Car Kumbh - Bookings Report', 14, 22);
+
+    // Date
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+    doc.text(`Total Bookings: ${filteredBookings.length}`, 14, 36);
+
+    // Table data
+    const tableData = filteredBookings.map((b) => [
+      b.token,
+      b.name,
+      b.number,
+      `₹${b.package}`,
+      b.paymentMode,
+      b.isPaid ? 'Paid' : 'Pending',
+      new Date(b.createdAt).toLocaleDateString(),
+    ]);
+
+    autoTable(doc, {
+      head: [['Token', 'Name', 'Phone', 'Package', 'Mode', 'Status', 'Date']],
+      body: tableData,
+      startY: 42,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [249, 115, 22] },
+    });
+
+    doc.save(`car-kumbh-bookings-${Date.now()}.pdf`);
+
+    toast({
+      title: "Exported",
+      description: `${filteredBookings.length} bookings exported as PDF`,
+    });
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setPaymentFilter('all');
+    setPackageFilter('all');
+    setStatusFilter('all');
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -106,36 +219,119 @@ const Admin = () => {
               Back to Home
             </Button>
           </Link>
-          
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-4xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-              <p className="text-muted-foreground">Total Bookings: {bookings.length}</p>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={exportData} variant="outline">
-                <Download className="mr-2 h-4 w-4" />
-                Export Data
-              </Button>
-              <Button onClick={handleLogout} variant="outline">
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </Button>
-            </div>
+
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-4xl font-bold text-foreground mb-2">Admin Dashboard</h1>
+            <p className="text-muted-foreground">
+              Total Bookings: {bookings.length}
+              {filteredBookings.length !== bookings.length && (
+                <span className="ml-2 text-primary">
+                  (Showing: {filteredBookings.length})
+                </span>
+              )}
+            </p>
           </div>
+
+          {/* Action Buttons - Stacked */}
+          <div className="flex flex-wrap gap-3 mb-6">
+            <Button onClick={exportCSV} variant="outline">
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              Export CSV
+            </Button>
+            <Button onClick={exportPDF} variant="outline">
+              <FileText className="mr-2 h-4 w-4" />
+              Export PDF
+            </Button>
+            <Button onClick={handleLogout} variant="outline">
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
+          </div>
+
+          {/* Search and Filters */}
+          <Card className="p-4 mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Filter className="h-5 w-5 text-muted-foreground" />
+              <span className="font-semibold text-foreground">Search & Filters</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {/* Search Input */}
+              <div className="lg:col-span-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name, token, phone..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Payment Mode Filter */}
+              <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Payment Mode" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Modes</SelectItem>
+                  <SelectItem value="cash">Cash</SelectItem>
+                  <SelectItem value="online">Online</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Package Filter */}
+              <Select value={packageFilter} onValueChange={setPackageFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Package" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Packages</SelectItem>
+                  <SelectItem value="499">₹499</SelectItem>
+                  <SelectItem value="999">₹999</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Status Filter */}
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Clear Filters Button */}
+            {(searchQuery || paymentFilter !== 'all' || packageFilter !== 'all' || statusFilter !== 'all') && (
+              <div className="mt-4">
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  Clear all filters
+                </Button>
+              </div>
+            )}
+          </Card>
         </motion.div>
 
+        {/* Bookings List */}
         <div className="grid gap-4">
           {isLoading ? (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">Loading bookings...</p>
             </Card>
-          ) : bookings.length === 0 ? (
+          ) : filteredBookings.length === 0 ? (
             <Card className="p-8 text-center">
-              <p className="text-muted-foreground">No bookings yet</p>
+              <p className="text-muted-foreground">
+                {bookings.length === 0 ? 'No bookings yet' : 'No bookings match your filters'}
+              </p>
             </Card>
           ) : (
-            bookings.map((booking, index) => (
+            filteredBookings.map((booking, index) => (
               <motion.div
                 key={booking._id}
                 initial={{ opacity: 0, y: 20 }}

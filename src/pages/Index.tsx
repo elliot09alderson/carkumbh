@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import BookingForm from "@/components/BookingForm";
 import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import { Car, Volume2, VolumeX } from "lucide-react";
@@ -18,7 +19,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative">
-      {/* Video Section */}
+      {/* Video Section - Commented out for now
       <section className="w-full h-[40vh] md:h-[80vh] overflow-hidden relative">
         <video
           ref={videoRef}
@@ -31,7 +32,6 @@ const Index = () => {
           <source src="/horilal-trailer.mp4" type="video/mp4" />
         </video>
 
-        {/* Sound Toggle Button */}
         <button
           onClick={toggleMute}
           className="absolute bottom-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-110 z-10"
@@ -44,6 +44,7 @@ const Index = () => {
           )}
         </button>
       </section>
+      */}
 
       <div className="relative">
         {/* Hero Section */}
@@ -146,12 +147,29 @@ const Index = () => {
             viewport={{ once: true }}
             className="max-w-7xl mx-auto text-center text-muted-foreground"
           >
-            <p>© 2024 Car Kumbh. All rights reserved.</p>
-            {/* <p className="mt-2">
-              <a href="/admin" className="text-primary hover:underline text-sm">
-                Admin Access
-              </a>
-            </p> */}
+            <div className="flex flex-wrap justify-center gap-4 mb-4">
+              <Link
+                to="/refund-policy"
+                className="text-sm hover:text-primary transition-colors"
+              >
+                Refund Policy
+              </Link>
+              <span className="text-border">|</span>
+              <Link
+                to="/terms-conditions"
+                className="text-sm hover:text-primary transition-colors"
+              >
+                Terms & Conditions
+              </Link>
+              <span className="text-border">|</span>
+              <Link
+                to="/privacy-policy"
+                className="text-sm hover:text-primary transition-colors"
+              >
+                Privacy Policy
+              </Link>
+            </div>
+            <p>© 2025 Car Kumbh. All rights reserved.</p>
           </motion.div>
         </footer>
       </div>
