@@ -19,14 +19,14 @@ const Index = () => {
   return (
     <div className="min-h-screen relative">
       {/* Video Section */}
-      <section className="w-full h-[40vh] md:h-[70vh] overflow-hidden relative">
+      <section className="w-full h-[40vh] md:h-[80vh] overflow-hidden relative">
         <video
           ref={videoRef}
           autoPlay
           loop
           muted
           playsInline
-          className="w-full h-full "
+          className="w-full h-full object-fit lg:object-cover"
         >
           <source src="/horilal-trailer.mp4" type="video/mp4" />
         </video>
