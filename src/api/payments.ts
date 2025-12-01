@@ -13,7 +13,7 @@ export interface OrderResponse {
   amount: number;
   currency: string;
   baseAmount: number;
-  convenienceFee: number;
+  gstAmount: number;
   totalAmount: number;
 }
 
@@ -42,7 +42,7 @@ export interface VerifyPaymentResponse {
     isPaid: boolean;
     razorpayOrderId: string;
     razorpayPaymentId: string;
-    convenienceFee: number;
+    gstAmount: number;
     totalAmountPaid: number;
     createdAt: string;
     updatedAt: string;
@@ -51,10 +51,9 @@ export interface VerifyPaymentResponse {
 
 export interface PriceBreakdown {
   baseAmount: number;
-  convenienceFee: number;
+  gstAmount: number;
   totalAmount: number;
   breakdown: {
-    mdr: number;
     gst: number;
   };
 }

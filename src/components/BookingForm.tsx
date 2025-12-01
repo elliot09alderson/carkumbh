@@ -16,11 +16,10 @@ declare global {
   }
 }
 
-// Calculate convenience fee (2% MDR + 18% GST on MDR)
-const calculateConvenienceFee = (baseAmount: number): number => {
-  const mdr = baseAmount * 0.02;
-  const gst = mdr * 0.18;
-  return Math.round(mdr + gst);
+// Calculate GST (18% on base amount)
+const calculateGST = (baseAmount: number): number => {
+  const gst = baseAmount * 0.18; // 18% GST
+  return Math.round(gst);
 };
 
 const BookingForm = () => {
@@ -50,8 +49,8 @@ const BookingForm = () => {
   }, []);
 
   const baseAmount = parseInt(formData.package);
-  const convenienceFee = calculateConvenienceFee(baseAmount);
-  const totalAmount = baseAmount + convenienceFee;
+  const gstAmount = calculateGST(baseAmount);
+  const totalAmount = baseAmount + gstAmount;
 
   const validateForm = (): boolean => {
     if (!formData.name || !formData.number || !formData.address) {
@@ -131,7 +130,7 @@ const BookingForm = () => {
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Car Kumbh",
-        description: `Package ₹${formData.package} + Convenience Fee`,
+        description: `Package ₹${formData.package} + GST`,
         order_id: orderData.orderId,
         handler: async function (response: any) {
           try {
@@ -452,9 +451,9 @@ const BookingForm = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
-                      Convenience Fee (2% + GST)
+                      GST (18%)
                     </span>
-                    <span className="font-medium">₹{convenienceFee}</span>
+                    <span className="font-medium">₹{gstAmount}</span>
                   </div>
                   <div className="border-t border-border/50 pt-2 mt-2">
                     <div className="flex justify-between text-base">
