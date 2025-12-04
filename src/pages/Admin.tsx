@@ -24,6 +24,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAllBookings, togglePaidStatus as apiTogglePaidStatus, Booking } from '@/api/bookings';
+import { getBanner, updateBanner } from '@/api/siteConfig';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -35,6 +36,8 @@ const Admin = () => {
   const [paymentFilter, setPaymentFilter] = useState('all');
   const [packageFilter, setPackageFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [currentBanner, setCurrentBanner] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const { isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -47,7 +50,39 @@ const Admin = () => {
       return;
     }
     loadBookings();
+    loadBanner();
   }, [isAuthenticated, authLoading, navigate]);
+
+  const loadBanner = async () => {
+    try {
+      const data = await getBanner();
+      setCurrentBanner(data.bannerUrl);
+    } catch (error) {
+      console.error("Failed to load banner", error);
+    }
+  };
+
+  const handleBannerUpload = async (file: File) => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) return;
+    try {
+      setIsUploading(true);
+      const data = await updateBanner(file, token);
+      setCurrentBanner(data.bannerUrl);
+      toast({
+        title: "Success",
+        description: "Banner updated successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update banner",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const loadBookings = async () => {
     try {
@@ -317,6 +352,41 @@ const Admin = () => {
             )}
           </Card>
         </motion.div>
+
+        {/* Banner Management */}
+        <Card className="p-6 mb-8">
+          <h2 className="text-2xl font-bold mb-4">Website Banner</h2>
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            <div className="w-full md:w-1/2">
+              <label className="block text-sm font-medium mb-2">Upload New Banner</label>
+              <div className="flex gap-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleBannerUpload(file);
+                  }}
+                  disabled={isUploading}
+                />
+                {isUploading && <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>}
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Recommended size: 1920x1080px. Max size: 5MB.
+              </p>
+            </div>
+            {currentBanner && (
+              <div className="w-full md:w-1/2">
+                <p className="text-sm font-medium mb-2">Current Banner</p>
+                <img
+                  src={currentBanner}
+                  alt="Current Banner"
+                  className="w-full h-48 object-cover rounded-lg border border-border"
+                />
+              </div>
+            )}
+          </div>
+        </Card>
 
         {/* Bookings List */}
         <div className="grid gap-4">

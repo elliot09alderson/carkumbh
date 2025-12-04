@@ -1,14 +1,31 @@
 import { motion } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import BookingForm from "@/components/BookingForm";
 import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import { Car, Volume2, VolumeX } from "lucide-react";
+import { getBanner } from "@/api/siteConfig";
+import { FaWhatsapp } from "react-icons/fa";
 
 const Index = () => {
   useSmoothScroll();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadBanner = async () => {
+      try {
+        const data = await getBanner();
+        if (data.bannerUrl) {
+          setBannerUrl(data.bannerUrl);
+        }
+      } catch (error) {
+        console.error("Failed to load banner", error);
+      }
+    };
+    loadBanner();
+  }, []);
 
   const toggleMute = () => {
     if (videoRef.current) {
@@ -122,7 +139,7 @@ const Index = () => {
               className="text-center mb-12"
             >
               <img
-                src="/eventBanner.jpeg"
+                src={bannerUrl || "/eventBanner.jpeg"}
                 alt="Car Kumbh Event Banner"
                 className="mx-auto mb-8 max-w-full h-auto rounded-lg shadow-lg"
               />
@@ -173,6 +190,17 @@ const Index = () => {
           </motion.div>
         </footer>
       </div>
+      
+      {/* WhatsApp Floating Button */}
+      <a
+        href="https://wa.me/916264824626"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:scale-110 transition-transform duration-300 flex items-center justify-center"
+        aria-label="Chat on WhatsApp"
+      >
+        <FaWhatsapp className="w-8 h-8" />
+      </a>
     </div>
   );
 };
