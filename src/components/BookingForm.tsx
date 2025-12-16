@@ -336,7 +336,7 @@ const BookingForm = () => {
                 onValueChange={(value) =>
                   setFormData({ ...formData, package: value })
                 }
-                className="grid grid-cols-2 gap-4"
+                className="grid grid-cols-3 gap-4"
               >
                 <Label
                   htmlFor="package-499"
@@ -375,6 +375,26 @@ const BookingForm = () => {
                     <span className="text-2xl font-bold block">₹999</span>
                     <span className="text-sm text-muted-foreground">
                       Standard
+                    </span>
+                  </div>
+                </Label>
+                <Label
+                  htmlFor="package-10000"
+                  className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    formData.package === "10000"
+                      ? "border-primary bg-primary/10 shadow-glow"
+                      : "border-border/50 bg-secondary/30 hover:border-border"
+                  }`}
+                >
+                  <RadioGroupItem
+                    value="10000"
+                    id="package-10000"
+                    className="sr-only"
+                  />
+                  <div className="text-center">
+                    <span className="text-2xl font-bold block">₹10000</span>
+                    <span className="text-sm text-muted-foreground">
+                      VIP
                     </span>
                   </div>
                 </Label>
