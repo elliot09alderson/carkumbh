@@ -214,13 +214,13 @@ const Index = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className="pt-8 flex flex-col sm:flex-row gap-4 justify-center"
+            className="pt-8 flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
             <Link to="/upcoming-event">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-gradient-primary text-primary-foreground text-lg font-semibold rounded-full shadow-glow flex items-center gap-2 mx-auto"
+                className="px-8 py-4 bg-gradient-primary text-primary-foreground text-lg font-semibold rounded-full shadow-glow flex items-center gap-2"
               >
                 Register for Event <ChevronRight className="w-5 h-5" />
               </motion.button>
@@ -229,7 +229,7 @@ const Index = () => {
               href="#about"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 border border-primary/50 text-foreground text-lg font-semibold rounded-full flex items-center gap-2 mx-auto hover:bg-primary/10 transition-colors"
+              className="px-8 py-4 border border-primary/50 text-foreground text-lg font-semibold rounded-full flex items-center gap-2 hover:bg-primary/10 transition-colors"
             >
               Learn More
             </motion.a>
@@ -542,12 +542,12 @@ const Index = () => {
                 their success. Register for our upcoming event and start your
                 transformation today.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Link to="/upcoming-event">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="px-10 py-4 bg-gradient-primary text-primary-foreground text-lg font-semibold rounded-full shadow-glow flex items-center gap-2 mx-auto"
+                    className="px-10 py-4 bg-gradient-primary text-primary-foreground text-lg font-semibold rounded-full shadow-glow flex items-center gap-2"
                   >
                     Register Now <ArrowRight className="w-5 h-5" />
                   </motion.button>
@@ -558,7 +558,7 @@ const Index = () => {
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-10 py-4 border border-primary/50 text-foreground text-lg font-semibold rounded-full flex items-center gap-2 mx-auto hover:bg-primary/10 transition-colors"
+                  className="px-10 py-4 border border-primary/50 text-foreground text-lg font-semibold rounded-full flex items-center gap-2 hover:bg-primary/10 transition-colors"
                 >
                   <FaWhatsapp className="w-5 h-5" /> Contact Us
                 </motion.a>
