@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import {
@@ -25,11 +26,25 @@ import {
   Mic,
   BookOpen,
   Rocket,
+  X,
+  ZoomIn,
+  Megaphone,
+  Home,
+  Brain,
+  Map,
+  Trophy,
+  Zap,
+  ChevronDown,
+  Sparkles,
+  Menu,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 
 const Index = () => {
   useSmoothScroll();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [activeAccordion, setActiveAccordion] = useState<number | null>(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const services = [
     {
@@ -101,6 +116,14 @@ const Index = () => {
     },
   ];
 
+  const galleryImages = [
+    "/images/grid/IMG_20251226_114520.jpg",
+    "/images/grid/IMG_20251226_114542.jpg",
+    "/images/grid/hero.jpg",
+    "/images/grid/IMG_20251226_114647.jpg",
+    "/images/grid/IMG_20251226_115015.jpg",
+  ];
+
   return (
     <div className="min-h-screen relative bg-background overflow-hidden">
       {/* Navbar */}
@@ -135,17 +158,70 @@ const Index = () => {
           </a>
           <Link
             to="/upcoming-event"
-            className="px-6 py-2 bg-gradient-primary text-primary-foreground rounded-full font-semibold hover:opacity-90 transition-opacity"
+            className="px-6 py-2.5 bg-gradient-primary text-primary-foreground rounded-full font-bold hover:scale-105 hover:shadow-[0_0_20px_hsl(45_93%_47%_/_0.6)] transition-all duration-300 animate-pulse-fast flex items-center gap-2"
           >
+            <Sparkles className="w-4 h-4 fill-current" />
             Upcoming Event
           </Link>
         </div>
-        <Link
-          to="/upcoming-event"
-          className="md:hidden px-4 py-2 bg-gradient-primary text-primary-foreground rounded-full text-sm font-semibold"
+
+        
+        {/* Mobile Menu Button */}
+        <button 
+          className="md:hidden p-2 text-foreground"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
-          Events
-        </Link>
+          {isMobileMenuOpen ? <X /> : <Menu />}
+        </button>
+
+        {/* Mobile Navigation Overlay */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="absolute top-full left-0 w-full bg-background/95 backdrop-blur-xl border-b border-border/50 p-6 flex flex-col gap-6 md:hidden shadow-2xl"
+            >
+               <a
+                href="#about"
+                className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                About
+              </a>
+              <a
+                href="#services"
+                className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Services
+              </a>
+              <a
+                href="#testimonials"
+                className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Testimonials
+              </a>
+              <a
+                href="#contact"
+                className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </a>
+              <Link
+                to="/upcoming-event"
+                className="w-full py-3 bg-gradient-primary text-primary-foreground rounded-lg font-bold text-center flex items-center justify-center gap-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Sparkles className="w-4 h-4 fill-current" />
+                Upcoming Event
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Hero Section */}
@@ -270,11 +346,11 @@ const Index = () => {
               className="relative"
             >
               <div className="aspect-[4/5] rounded-2xl bg-gradient-to-br from-secondary to-card overflow-hidden relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-32 h-32 rounded-full bg-gradient-primary flex items-center justify-center shadow-glow">
-                    <User className="w-16 h-16 text-primary-foreground" />
-                  </div>
-                </div>
+                <img
+                  src="/images/hero.jpg"
+                  alt="Toran Sir"
+                  className="w-full h-full object-cover"
+                />
                 {/* Decorative Elements */}
                 <div className="absolute top-4 right-4 w-20 h-20 border border-primary/30 rounded-full" />
                 <div className="absolute bottom-4 left-4 w-16 h-16 border border-primary/20 rounded-full" />
@@ -444,6 +520,284 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Gallery Section */}
+      <section className="py-24 px-4 bg-background relative">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <p className="text-primary font-accent text-lg italic mb-2">
+              Moments
+            </p>
+            <h2 className="text-4xl md:text-5xl font-bold font-heading mb-4">
+              Gallery <span className="text-gradient">Highlights</span>
+            </h2>
+            <div className="artistic-line mx-auto" />
+          </motion.div>
+
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+            {galleryImages.map((image, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="relative group rounded-2xl overflow-hidden shadow-lg border border-border/50 break-inside-avoid cursor-pointer"
+                onClick={() => setSelectedImage(image)}
+              >
+                <img
+                  src={image}
+                  alt={`Gallery image ${index + 1}`}
+                  className={`w-full object-cover transition-transform duration-500 group-hover:scale-110 ${
+                    image.includes("hero.jpg") ? "aspect-[3/4]" : "h-auto"
+                  }`}
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <ZoomIn className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transform scale-50 group-hover:scale-100 transition-all duration-300 delay-75" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Lightbox Modal */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setSelectedImage(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-5xl w-full max-h-[90vh] flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute -top-12 right-0 text-white hover:text-primary transition-colors"
+              >
+                <X className="w-8 h-8" />
+              </button>
+              <img
+                src={selectedImage}
+                alt="Gallery full view"
+                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Who Should Attend Section */}
+      <section className="py-24 px-4 relative overflow-hidden bg-background">
+        <div className="absolute inset-0 pointer-events-none">
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-4xl md:text-6xl font-bold font-heading mb-6">
+              Who Should <span className="text-gradient">Attend</span>
+            </h2>
+            <div className="artistic-line mx-auto mb-8" />
+            <p className="text-xl md:text-2xl font-light text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+              This summit is for anyone who wants <span className="text-primary font-semibold">2026</span> to be a <span className="text-primary font-semibold">breakthrough year</span>:
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
+            {[
+              { icon: User, label: "Entrepreneurs", desc: "Scale your vision and build a legacy." },
+              { icon: Briefcase, label: "Working Professionals", desc: "Accelerate your career trajectory." },
+              { icon: Users, label: "Coaches & Trainers", desc: "Amplify your impact and authority." },
+              { icon: Megaphone, label: "Digital Creators", desc: "Monetize your influence effectively." },
+              { icon: Home, label: "Homemakers", desc: "Empower yourself with financial freedom." },
+              { icon: Brain, label: "Growth Seekers", desc: "Anyone desiring clarity & strong mindset." },
+            ].map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -5 }}
+                className="bg-card/30 backdrop-blur-sm border border-border/40 overflow-hidden rounded-2xl p-8 group relative transition-all duration-300 hover:border-primary/50 hover:bg-card/50"
+              >
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
+                   <item.icon className="w-24 h-24 text-primary rotate-12" />
+                </div>
+                
+                <div className="relative z-10 flex flex-col h-full justify-between gap-6">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-secondary to-background border border-white/10 flex items-center justify-center group-hover:border-primary/50 transition-colors shadow-lg">
+                        <item.icon className="w-7 h-7 text-primary/80 group-hover:text-primary transition-colors" />
+                    </div>
+                    
+                    <div>
+                        <h3 className="text-2xl font-bold font-heading text-foreground group-hover:text-primary transition-colors mb-2">
+                        {item.label}
+                        </h3>
+                        <p className="text-muted-foreground/80 font-light leading-relaxed">
+                        {item.desc}
+                        </p>
+                    </div>
+
+                    <div className="w-8 h-1 bg-primary/20 group-hover:w-full group-hover:bg-primary transition-all duration-500 rounded-full" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* What This Summit Will Give You Section */}
+      <section className="py-24 px-4 bg-background relative overflow-hidden border-t border-white/5">
+        {/* Decorative Background */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
+             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px]" />
+             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px]" />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+            {/* Left Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="space-y-8"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold font-heading leading-tight">
+                The Blueprint For Your <br/> <span className="text-gradient">2026 Evolution</span>
+              </h2>
+              <div className="w-20 h-1 bg-gradient-to-r from-primary to-transparent" />
+              
+              <p className="text-xl text-muted-foreground leading-relaxed font-light">
+                This isn't just another seminar. It's an <span className="text-primary font-semibold">architecture session</span> for your future.
+              </p>
+              
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Most people start the year with vague resolutions. We ensure you start with a battle-tested strategy. We strip away the fluff to give you the raw, tactical playbooks that industry titans use to dominate.
+              </p>
+
+              <div className="flex flex-col gap-4 text-sm text-primary/80 font-medium uppercase tracking-widest pt-4">
+                <div className="flex items-center gap-3">
+                   <div className="w-2 h-2 rounded-full bg-primary" />
+                   Tactical Frameworks
+                </div>
+                <div className="flex items-center gap-3">
+                   <div className="w-2 h-2 rounded-full bg-primary" />
+                   Science-Backed Protocols
+                </div>
+                <div className="flex items-center gap-3">
+                   <div className="w-2 h-2 rounded-full bg-primary" />
+                   High-Impact Networking
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right Accordion */}
+            <motion.div
+               initial={{ opacity: 0, x: 30 }}
+               whileInView={{ opacity: 1, x: 0 }}
+               transition={{ duration: 0.6, delay: 0.2 }}
+               viewport={{ once: true }}
+               className="space-y-4"
+            >
+              {[
+                { 
+                  id: 0,
+                  icon: Map, 
+                  title: "Strategic 2026 Roadmap", 
+                  content: "Stop living by guesswork. We'll build a precision-engineered timeline for your personal and professional evolution, ensuring every month of 2026 moves the needle toward your ultimate vision." 
+                },
+                { 
+                  id: 1,
+                  icon: Trophy, 
+                  title: "High-Impact Leadership", 
+                  content: "Command the room. Learn the psychological frameworks used by top CEOs to influence teams, negotiate high-stakes deals, and build unwavering authority in any environment." 
+                },
+                { 
+                  id: 2,
+                  icon: Zap, 
+                  title: "Cognitive Mastery & Flow", 
+                  content: "Unlock your brain's hidden gear. Master the protocols to banish brain fog, sustain deep focus, and operate at peak performance on demand, regardless of external chaos." 
+                },
+                {
+                  id: 3,
+                  icon: Rocket,
+                  title: "What Happens After Registration?",
+                  content: "You will immediately receive your Summit Entry Pass via email. Additionally, you'll be redirected to join our VIP WhatsApp Mastermind where the pre-event networking begins. Your Strategic Workbook will be delivered 48 hours prior to the event."
+                }
+              ].map((item, index) => (
+                <div 
+                  key={index}
+                  className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
+                    activeAccordion === index 
+                      ? "bg-card/40 border-primary/50 shadow-glow/10" 
+                      : "bg-card/20 border-white/5 hover:border-white/10"
+                  }`}
+                >
+                  <button
+                    onClick={() => setActiveAccordion(activeAccordion === index ? null : index)}
+                    className="w-full p-6 flex items-center justify-between text-left group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                        activeAccordion === index 
+                          ? "bg-primary text-primary-foreground shadow-glow" 
+                          : "bg-secondary text-muted-foreground group-hover:text-primary"
+                      }`}>
+                        <item.icon className="w-6 h-6" />
+                      </div>
+                      <h3 className={`text-xl font-bold font-heading transition-colors ${
+                        activeAccordion === index ? "text-primary" : "text-foreground"
+                      }`}>
+                        {item.title}
+                      </h3>
+                    </div>
+                    <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${
+                      activeAccordion === index ? "rotate-180 text-primary" : "text-muted-foreground"
+                    }`} />
+                  </button>
+                  <AnimatePresence>
+                    {activeAccordion === index && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="px-6 pb-6 pl-[5.5rem] text-muted-foreground leading-relaxed">
+                          {item.content}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
       <section
         id="testimonials"
@@ -466,33 +820,33 @@ const Index = () => {
             <div className="artistic-line mx-auto" />
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="p-8 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 relative"
-              >
-                <Quote className="w-10 h-10 text-primary/20 absolute top-6 right-6" />
-                <p className="text-muted-foreground leading-relaxed mb-6 italic font-accent text-lg">
-                  "{testimonial.content}"
-                </p>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center">
-                    <User className="w-6 h-6 text-primary-foreground" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {testimonial.role}
-                    </p>
+
+          {/* Infinite Marquee Container */}
+          <div className="relative w-full overflow-hidden mask-gradient-x">
+            <div className="flex gap-8 w-max animate-marquee pb-4 pl-4">
+              {[...testimonials, ...testimonials].map((testimonial, index) => (
+                <div
+                  key={index}
+                  className="w-[300px] md:w-[400px] flex-shrink-0 p-8 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 relative hover:border-primary/50 transition-colors group"
+                >
+                  <Quote className="w-10 h-10 text-primary/20 absolute top-6 right-6 group-hover:text-primary/40 transition-colors" />
+                  <p className="text-muted-foreground leading-relaxed mb-6 italic font-accent text-lg">
+                    "{testimonial.content}"
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
+                      <User className="w-6 h-6 text-primary-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">{testimonial.name}</p>
+                      <p className="text-sm text-primary/80">
+                        {testimonial.role}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </motion.div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
