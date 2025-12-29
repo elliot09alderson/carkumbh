@@ -117,11 +117,10 @@ const Index = () => {
   ];
 
   const galleryImages = [
-    "/images/grid/IMG_20251226_114520.jpg",
-    "/images/grid/IMG_20251226_114542.jpg",
-    "/images/grid/hero.jpg",
-    "/images/grid/IMG_20251226_114647.jpg",
-    "/images/grid/IMG_20251226_115015.jpg",
+    // "/images/grid/hero.jpg",
+    "/images/grid/WhatsApp Image 2025-12-29 at 23.24.14.jpeg",
+    "/images/grid/WhatsApp Image 2025-12-29 at 23.24.15 (1).jpeg",
+    "/images/grid/WhatsApp Image 2025-12-29 at 23.24.15.jpeg",
   ];
 
   return (
@@ -165,9 +164,8 @@ const Index = () => {
           </Link>
         </div>
 
-        
         {/* Mobile Menu Button */}
-        <button 
+        <button
           className="md:hidden p-2 text-foreground"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
@@ -183,7 +181,7 @@ const Index = () => {
               exit={{ opacity: 0, y: -20 }}
               className="absolute top-full left-0 w-full bg-background/95 backdrop-blur-xl border-b border-border/50 p-6 flex flex-col gap-6 md:hidden shadow-2xl"
             >
-               <a
+              <a
                 href="#about"
                 className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -366,7 +364,9 @@ const Index = () => {
                 <p className="text-4xl font-bold text-gradient font-heading">
                   15+
                 </p>
-                <p className="text-sm text-muted-foreground">Years Experience</p>
+                <p className="text-sm text-muted-foreground">
+                  Years Experience
+                </p>
               </motion.div>
             </motion.div>
 
@@ -408,7 +408,9 @@ const Index = () => {
                   </div>
                   <div>
                     <p className="font-semibold">Certified Coach</p>
-                    <p className="text-sm text-muted-foreground">ICF Certified</p>
+                    <p className="text-sm text-muted-foreground">
+                      ICF Certified
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -465,7 +467,9 @@ const Index = () => {
                 <p className="text-5xl md:text-6xl font-bold text-gradient font-heading mb-2">
                   {stat.number}
                 </p>
-                <p className="text-muted-foreground font-medium">{stat.label}</p>
+                <p className="text-muted-foreground font-medium">
+                  {stat.label}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -602,7 +606,7 @@ const Index = () => {
       {/* Who Should Attend Section */}
       <section className="py-24 px-4 relative overflow-hidden bg-background">
         <div className="absolute inset-0 pointer-events-none">
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
@@ -618,18 +622,47 @@ const Index = () => {
             </h2>
             <div className="artistic-line mx-auto mb-8" />
             <p className="text-xl md:text-2xl font-light text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-              This summit is for anyone who wants <span className="text-primary font-semibold">2026</span> to be a <span className="text-primary font-semibold">breakthrough year</span>:
+              This summit is for anyone who wants{" "}
+              <span className="text-primary font-semibold">2026</span> to be a{" "}
+              <span className="text-primary font-semibold">
+                breakthrough year
+              </span>
+              :
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
             {[
-              { icon: User, label: "Entrepreneurs", desc: "Scale your vision and build a legacy." },
-              { icon: Briefcase, label: "Working Professionals", desc: "Accelerate your career trajectory." },
-              { icon: Users, label: "Coaches & Trainers", desc: "Amplify your impact and authority." },
-              { icon: Megaphone, label: "Digital Creators", desc: "Monetize your influence effectively." },
-              { icon: Home, label: "Homemakers", desc: "Empower yourself with financial freedom." },
-              { icon: Brain, label: "Growth Seekers", desc: "Anyone desiring clarity & strong mindset." },
+              {
+                icon: User,
+                label: "Entrepreneurs",
+                desc: "Scale your vision and build a legacy.",
+              },
+              {
+                icon: Briefcase,
+                label: "Working Professionals",
+                desc: "Accelerate your career trajectory.",
+              },
+              {
+                icon: Users,
+                label: "Coaches & Trainers",
+                desc: "Amplify your impact and authority.",
+              },
+              {
+                icon: Megaphone,
+                label: "Digital Creators",
+                desc: "Monetize your influence effectively.",
+              },
+              {
+                icon: Home,
+                label: "Homemakers",
+                desc: "Empower yourself with financial freedom.",
+              },
+              {
+                icon: Brain,
+                label: "Growth Seekers",
+                desc: "Anyone desiring clarity & strong mindset.",
+              },
             ].map((item, index) => (
               <motion.div
                 key={index}
@@ -641,24 +674,24 @@ const Index = () => {
                 className="bg-card/30 backdrop-blur-sm border border-border/40 overflow-hidden rounded-2xl p-8 group relative transition-all duration-300 hover:border-primary/50 hover:bg-card/50"
               >
                 <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
-                   <item.icon className="w-24 h-24 text-primary rotate-12" />
+                  <item.icon className="w-24 h-24 text-primary rotate-12" />
                 </div>
-                
-                <div className="relative z-10 flex flex-col h-full justify-between gap-6">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-secondary to-background border border-white/10 flex items-center justify-center group-hover:border-primary/50 transition-colors shadow-lg">
-                        <item.icon className="w-7 h-7 text-primary/80 group-hover:text-primary transition-colors" />
-                    </div>
-                    
-                    <div>
-                        <h3 className="text-2xl font-bold font-heading text-foreground group-hover:text-primary transition-colors mb-2">
-                        {item.label}
-                        </h3>
-                        <p className="text-muted-foreground/80 font-light leading-relaxed">
-                        {item.desc}
-                        </p>
-                    </div>
 
-                    <div className="w-8 h-1 bg-primary/20 group-hover:w-full group-hover:bg-primary transition-all duration-500 rounded-full" />
+                <div className="relative z-10 flex flex-col h-full justify-between gap-6">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-secondary to-background border border-white/10 flex items-center justify-center group-hover:border-primary/50 transition-colors shadow-lg">
+                    <item.icon className="w-7 h-7 text-primary/80 group-hover:text-primary transition-colors" />
+                  </div>
+
+                  <div>
+                    <h3 className="text-2xl font-bold font-heading text-foreground group-hover:text-primary transition-colors mb-2">
+                      {item.label}
+                    </h3>
+                    <p className="text-muted-foreground/80 font-light leading-relaxed">
+                      {item.desc}
+                    </p>
+                  </div>
+
+                  <div className="w-8 h-1 bg-primary/20 group-hover:w-full group-hover:bg-primary transition-all duration-500 rounded-full" />
                 </div>
               </motion.div>
             ))}
@@ -670,8 +703,8 @@ const Index = () => {
       <section className="py-24 px-4 bg-background relative overflow-hidden border-t border-white/5">
         {/* Decorative Background */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
-             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px]" />
-             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px]" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px]" />
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px]" />
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
@@ -685,97 +718,123 @@ const Index = () => {
               className="space-y-8"
             >
               <h2 className="text-4xl md:text-5xl font-bold font-heading leading-tight">
-                The Blueprint For Your <br/> <span className="text-gradient">2026 Evolution</span>
+                The Blueprint For Your <br />{" "}
+                <span className="text-gradient">2026 Evolution</span>
               </h2>
               <div className="w-20 h-1 bg-gradient-to-r from-primary to-transparent" />
-              
+
               <p className="text-xl text-muted-foreground leading-relaxed font-light">
-                This isn't just another seminar. It's an <span className="text-primary font-semibold">architecture session</span> for your future.
+                This isn't just another seminar. It's an{" "}
+                <span className="text-primary font-semibold">
+                  architecture session
+                </span>{" "}
+                for your future.
               </p>
-              
+
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Most people start the year with vague resolutions. We ensure you start with a battle-tested strategy. We strip away the fluff to give you the raw, tactical playbooks that industry titans use to dominate.
+                Most people start the year with vague resolutions. We ensure you
+                start with a battle-tested strategy. We strip away the fluff to
+                give you the raw, tactical playbooks that industry titans use to
+                dominate.
               </p>
 
               <div className="flex flex-col gap-4 text-sm text-primary/80 font-medium uppercase tracking-widest pt-4">
                 <div className="flex items-center gap-3">
-                   <div className="w-2 h-2 rounded-full bg-primary" />
-                   Tactical Frameworks
+                  <div className="w-2 h-2 rounded-full bg-primary" />
+                  Tactical Frameworks
                 </div>
                 <div className="flex items-center gap-3">
-                   <div className="w-2 h-2 rounded-full bg-primary" />
-                   Science-Backed Protocols
+                  <div className="w-2 h-2 rounded-full bg-primary" />
+                  Science-Backed Protocols
                 </div>
                 <div className="flex items-center gap-3">
-                   <div className="w-2 h-2 rounded-full bg-primary" />
-                   High-Impact Networking
+                  <div className="w-2 h-2 rounded-full bg-primary" />
+                  High-Impact Networking
                 </div>
               </div>
             </motion.div>
 
             {/* Right Accordion */}
             <motion.div
-               initial={{ opacity: 0, x: 30 }}
-               whileInView={{ opacity: 1, x: 0 }}
-               transition={{ duration: 0.6, delay: 0.2 }}
-               viewport={{ once: true }}
-               className="space-y-4"
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="space-y-4"
             >
               {[
-                { 
+                {
                   id: 0,
-                  icon: Map, 
-                  title: "Strategic 2026 Roadmap", 
-                  content: "Stop living by guesswork. We'll build a precision-engineered timeline for your personal and professional evolution, ensuring every month of 2026 moves the needle toward your ultimate vision." 
+                  icon: Map,
+                  title: "Strategic 2026 Roadmap",
+                  content:
+                    "Stop living by guesswork. We'll build a precision-engineered timeline for your personal and professional evolution, ensuring every month of 2026 moves the needle toward your ultimate vision.",
                 },
-                { 
+                {
                   id: 1,
-                  icon: Trophy, 
-                  title: "High-Impact Leadership", 
-                  content: "Command the room. Learn the psychological frameworks used by top CEOs to influence teams, negotiate high-stakes deals, and build unwavering authority in any environment." 
+                  icon: Trophy,
+                  title: "High-Impact Leadership",
+                  content:
+                    "Command the room. Learn the psychological frameworks used by top CEOs to influence teams, negotiate high-stakes deals, and build unwavering authority in any environment.",
                 },
-                { 
+                {
                   id: 2,
-                  icon: Zap, 
-                  title: "Cognitive Mastery & Flow", 
-                  content: "Unlock your brain's hidden gear. Master the protocols to banish brain fog, sustain deep focus, and operate at peak performance on demand, regardless of external chaos." 
+                  icon: Zap,
+                  title: "Cognitive Mastery & Flow",
+                  content:
+                    "Unlock your brain's hidden gear. Master the protocols to banish brain fog, sustain deep focus, and operate at peak performance on demand, regardless of external chaos.",
                 },
                 {
                   id: 3,
                   icon: Rocket,
                   title: "What Happens After Registration?",
-                  content: "You will immediately receive your Summit Entry Pass via email. Additionally, you'll be redirected to join our VIP WhatsApp Mastermind where the pre-event networking begins. Your Strategic Workbook will be delivered 48 hours prior to the event."
-                }
+                  content:
+                    "You will immediately receive your Summit Entry Pass via email. Additionally, you'll be redirected to join our VIP WhatsApp Mastermind where the pre-event networking begins. Your Strategic Workbook will be delivered 48 hours prior to the event.",
+                },
               ].map((item, index) => (
-                <div 
+                <div
                   key={index}
                   className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
-                    activeAccordion === index 
-                      ? "bg-card/40 border-primary/50 shadow-glow/10" 
+                    activeAccordion === index
+                      ? "bg-card/40 border-primary/50 shadow-glow/10"
                       : "bg-card/20 border-white/5 hover:border-white/10"
                   }`}
                 >
                   <button
-                    onClick={() => setActiveAccordion(activeAccordion === index ? null : index)}
+                    onClick={() =>
+                      setActiveAccordion(
+                        activeAccordion === index ? null : index
+                      )
+                    }
                     className="w-full p-6 flex items-center justify-between text-left group"
                   >
                     <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        activeAccordion === index 
-                          ? "bg-primary text-primary-foreground shadow-glow" 
-                          : "bg-secondary text-muted-foreground group-hover:text-primary"
-                      }`}>
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                          activeAccordion === index
+                            ? "bg-primary text-primary-foreground shadow-glow"
+                            : "bg-secondary text-muted-foreground group-hover:text-primary"
+                        }`}
+                      >
                         <item.icon className="w-6 h-6" />
                       </div>
-                      <h3 className={`text-xl font-bold font-heading transition-colors ${
-                        activeAccordion === index ? "text-primary" : "text-foreground"
-                      }`}>
+                      <h3
+                        className={`text-xl font-bold font-heading transition-colors ${
+                          activeAccordion === index
+                            ? "text-primary"
+                            : "text-foreground"
+                        }`}
+                      >
                         {item.title}
                       </h3>
                     </div>
-                    <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${
-                      activeAccordion === index ? "rotate-180 text-primary" : "text-muted-foreground"
-                    }`} />
+                    <ChevronDown
+                      className={`w-5 h-5 transition-transform duration-300 ${
+                        activeAccordion === index
+                          ? "rotate-180 text-primary"
+                          : "text-muted-foreground"
+                      }`}
+                    />
                   </button>
                   <AnimatePresence>
                     {activeAccordion === index && (
@@ -820,7 +879,6 @@ const Index = () => {
             <div className="artistic-line mx-auto" />
           </motion.div>
 
-
           {/* Infinite Marquee Container */}
           <div className="relative w-full overflow-hidden mask-gradient-x">
             <div className="flex gap-8 w-max animate-marquee pb-4 pl-4">
@@ -838,7 +896,9 @@ const Index = () => {
                       <User className="w-6 h-6 text-primary-foreground" />
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground">{testimonial.name}</p>
+                      <p className="font-semibold text-foreground">
+                        {testimonial.name}
+                      </p>
                       <p className="text-sm text-primary/80">
                         {testimonial.role}
                       </p>
@@ -923,7 +983,10 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="relative pt-24 pb-8 px-4 border-t border-border/50">
+      <footer
+        id="contact"
+        className="relative pt-24 pb-8 px-4 border-t border-border/50"
+      >
         {/* Footer Top - Main Content */}
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
@@ -935,8 +998,9 @@ const Index = () => {
                 </h3>
               </Link>
               <p className="text-muted-foreground leading-relaxed mb-6 max-w-md">
-                Empowering entrepreneurs and corporate leaders with transformative
-                coaching, innovative strategies, and the mindset for success.
+                Empowering entrepreneurs and corporate leaders with
+                transformative coaching, innovative strategies, and the mindset
+                for success.
               </p>
               {/* Social Links */}
               <div className="flex gap-4">
