@@ -128,6 +128,20 @@ const Index = () => {
         "The training sessions gave me the skills and mindset to succeed as an entrepreneur.",
       image: "/carkumbhtstimonials/horilal.jpeg",
     },
+    {
+      name: "Mr. Lala Ram Patel",
+      role: "Director, MLE Corporate Pvt. Ltd. India",
+      content:
+        "Working with Toran Sir has been a transformative experience for our organization.",
+      image: "/lalaram.jpeg",
+    },
+    {
+      name: "Mr. Mahendra Patel",
+      role: "Director, MLE Corporate Pvt. Ltd. India",
+      content:
+        "Toran Sir's expertise and dedication have made a significant impact on our team's performance.",
+      image: "/mahendra-patel.jpeg",
+    },
   ];
 
   const galleryImages = [
