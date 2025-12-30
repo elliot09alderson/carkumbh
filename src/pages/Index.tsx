@@ -87,32 +87,46 @@ const Index = () => {
 
   const stats = [
     { number: "10K+", label: "Lives Transformed" },
-    { number: "500+", label: "Corporate Sessions" },
-    { number: "15+", label: "Years Experience" },
-    { number: "100+", label: "Companies Trained" },
+    { number: "50+", label: "Corporate Sessions" },
+    { number: "5+", label: "Years Experience" },
+    { number: "12+", label: "Companies Trained" },
   ];
 
   const testimonials = [
     {
-      name: "Rajesh Kumar",
-      role: "CEO, TechVentures",
+      name: "Pitamber Patel",
+      role: "Director, Rich Life International Pvt Ltd",
       content:
         "Toran Sir's coaching transformed our entire leadership approach. His insights are invaluable.",
-      image: null,
+      image: "/carkumbhtstimonials/pitamber.jpeg",
     },
     {
-      name: "Priya Sharma",
-      role: "Entrepreneur",
+      name: "Prashant Singh",
+      role: "Sales Manager, Hyundai",
       content:
-        "The communication training was a game-changer for my business. Highly recommended!",
-      image: null,
+        "The communication training was a game-changer for my career. Highly recommended!",
+      image: "/carkumbhtstimonials/prashantsingh.jpeg",
     },
     {
-      name: "Amit Patel",
-      role: "Director, Global Corp",
+      name: "Dewa Sahu",
+      role: "Sales Manager, AU Finance",
       content:
         "One of the most impactful training sessions our team has ever experienced.",
-      image: null,
+      image: "/carkumbhtstimonials/devasahu.jpeg",
+    },
+    {
+      name: "Krishna Patel",
+      role: "Entrepreneur",
+      content:
+        "Toran Sir's guidance helped me build my business with confidence and clarity.",
+      image: "/carkumbhtstimonials/kirshna.jpeg",
+    },
+    {
+      name: "Horilala Markam",
+      role: "Entrepreneur",
+      content:
+        "The training sessions gave me the skills and mindset to succeed as an entrepreneur.",
+      image: "/carkumbhtstimonials/horilal.jpeg",
     },
   ];
 
@@ -341,11 +355,11 @@ const Index = () => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="relative"
+              className="relative max-w-[463px]"
             >
               <div className="aspect-[4/5] rounded-2xl bg-gradient-to-br from-secondary to-card overflow-hidden relative">
                 <img
-                  src="/images/hero.jpg"
+                  src="/abt-flip-x.jpeg"
                   alt="Toran Sir"
                   className="w-full h-full object-cover"
                 />
@@ -362,7 +376,7 @@ const Index = () => {
                 className="absolute -bottom-6 -right-6 bg-card p-6 rounded-2xl shadow-elevated border border-border/50"
               >
                 <p className="text-4xl font-bold text-gradient font-heading">
-                  15+
+                  5+
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Years Experience
@@ -409,7 +423,7 @@ const Index = () => {
                   <div>
                     <p className="font-semibold">Certified Coach</p>
                     <p className="text-sm text-muted-foreground">
-                      ICF Certified
+                      Certified
                     </p>
                   </div>
                 </div>
@@ -892,9 +906,17 @@ const Index = () => {
                     "{testimonial.content}"
                   </p>
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
-                      <User className="w-6 h-6 text-primary-foreground" />
-                    </div>
+                    {testimonial.image ? (
+                      <img
+                        src={testimonial.image}
+                        alt={testimonial.name}
+                        className="w-12 h-12 rounded-full object-cover shadow-lg"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
+                        <User className="w-6 h-6 text-primary-foreground" />
+                      </div>
+                    )}
                     <div>
                       <p className="font-semibold text-foreground">
                         {testimonial.name}
@@ -1091,7 +1113,9 @@ const Index = () => {
                 <li className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-primary mt-0.5" />
                   <span className="text-muted-foreground">
-                    Indore, Madhya Pradesh, India
+                    Parpoda, Bemetara Road,<br />
+                    District Bemetara,<br />
+                    Chhattisgarh - 491993
                   </span>
                 </li>
               </ul>

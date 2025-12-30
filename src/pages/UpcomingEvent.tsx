@@ -49,7 +49,7 @@ const UpcomingEvent = () => {
               Upcoming Event
             </h1>
             <img
-              src={bannerUrl || "/eventBanner.jpeg"}
+              src={bannerUrl || "/banner-evnt.jpeg"}
               alt="Event Banner"
               className="mx-auto mb-8 max-w-2xl w-full h-auto rounded-xl shadow-2xl border border-border/50"
             />
