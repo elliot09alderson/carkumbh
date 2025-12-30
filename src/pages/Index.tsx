@@ -404,7 +404,7 @@ const Index = () => {
               </div>
 
               <p className="text-muted-foreground text-lg leading-relaxed">
-                With over 15 years of experience in corporate training and
+                With over 5 years of experience in corporate training and
                 business coaching, I have dedicated my life to empowering
                 individuals and organizations to reach their full potential.
               </p>
