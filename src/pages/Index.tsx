@@ -106,6 +106,7 @@ const Index = () => {
       content:
         "The communication training was a game-changer for my career. Highly recommended!",
       image: "/carkumbhtstimonials/prashantsingh.jpeg",
+      imagePosition: "center",
     },
     {
       name: "Dewa Sahu",
@@ -113,6 +114,7 @@ const Index = () => {
       content:
         "One of the most impactful training sessions our team has ever experienced.",
       image: "/carkumbhtstimonials/devasahu.jpeg",
+      imagePosition: "center",
     },
     {
       name: "Krishna Patel",
@@ -140,7 +142,14 @@ const Index = () => {
       role: "Director, MLE Corporate Pvt. Ltd. India",
       content:
         "Toran Sir's expertise and dedication have made a significant impact on our team's performance.",
-      image: "/mahendra-patel.jpeg",
+      image: "/carkumbhtstimonials/mahendra.jpeg",
+    },
+    {
+      name: "Ramesh Sinha",
+      role: "Development Manager, SBI Life Insurance",
+      content:
+        "Toran Sir's training programs have been instrumental in enhancing our team's performance.",
+      image: "/carkumbhtstimonials/RameshSinha.jpeg",
     },
   ];
 
@@ -436,9 +445,7 @@ const Index = () => {
                   </div>
                   <div>
                     <p className="font-semibold">Certified Coach</p>
-                    <p className="text-sm text-muted-foreground">
-                      Certified
-                    </p>
+                    <p className="text-sm text-muted-foreground">Certified</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -924,7 +931,11 @@ const Index = () => {
                       <img
                         src={testimonial.image}
                         alt={testimonial.name}
-                        className="w-12 h-12 rounded-full object-cover shadow-lg"
+                        className={`w-12 h-12 rounded-full object-cover shadow-lg ${
+                          testimonial.imagePosition === "center"
+                            ? "object-center"
+                            : "object-top"
+                        }`}
                       />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
@@ -1127,8 +1138,10 @@ const Index = () => {
                 <li className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-primary mt-0.5" />
                   <span className="text-muted-foreground">
-                    Parpoda, Bemetara Road,<br />
-                    District Bemetara,<br />
+                    Parpoda, Bemetara Road,
+                    <br />
+                    District Bemetara,
+                    <br />
                     Chhattisgarh - 491993
                   </span>
                 </li>
