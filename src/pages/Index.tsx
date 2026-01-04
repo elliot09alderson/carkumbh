@@ -299,11 +299,8 @@ const Index = () => {
         </div>
       </Link>
 
-      {/* Spacer for fixed marquee */}
-      <div className="h-[40px]" />
-
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col items-center justify-center px-4 relative pt-20">
+      <section className="min-h-screen flex flex-col items-center justify-center px-4 relative pt-32 md:pt-36">
         {/* Artistic Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse-slow" />
