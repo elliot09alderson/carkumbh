@@ -279,7 +279,7 @@ const Index = () => {
       {/* Marquee Offer Banner */}
       <Link 
         to="/certification-registration"
-        className="fixed top-[72px] left-0 right-0 z-40 bg-gradient-to-r from-purple-600 via-primary to-purple-600 py-2 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+        className="fixed top-[88px] left-0 right-0 z-30 bg-gradient-to-r from-purple-600 via-primary to-purple-600 py-2.5 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity shadow-lg"
       >
         <div className="flex animate-marquee whitespace-nowrap">
           {[...Array(10)].map((_, i) => (
@@ -300,7 +300,7 @@ const Index = () => {
       </Link>
 
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col items-center justify-center px-4 relative pt-32 md:pt-36">
+      <section className="min-h-screen flex flex-col items-center justify-center px-4 relative pt-40 md:pt-44">
         {/* Artistic Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse-slow" />
