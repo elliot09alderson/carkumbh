@@ -847,9 +847,10 @@ const CertificationRegistration = () => {
       <div className="text-center py-10">
         <Link
           to="/"
-          className="text-primary hover:underline text-sm font-medium"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/50 rounded-full text-foreground font-medium hover:from-purple-500/20 hover:to-blue-500/20 hover:border-purple-500 transition-all"
         >
-          ← Back to Home
+          <Home className="w-4 h-4 text-purple-400" />
+          Back to Home
         </Link>
       </div>
     </div>
