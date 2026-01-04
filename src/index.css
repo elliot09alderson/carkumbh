@@ -179,4 +179,101 @@ All colors MUST be HSL.
     mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
   }
+
+  /* Electric Border Animation - Compatible Version */
+  .electric-border {
+    position: relative;
+    background: hsl(220 18% 12%);
+    border-radius: 1.5rem;
+    z-index: 0;
+  }
+
+  .electric-border::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -3px;
+    border-radius: 1.75rem;
+    background: linear-gradient(
+      90deg,
+      hsl(45 93% 47%),
+      hsl(280 90% 60%),
+      hsl(200 90% 50%),
+      hsl(45 93% 47%),
+      hsl(280 90% 60%),
+      hsl(200 90% 50%),
+      hsl(45 93% 47%)
+    );
+    background-size: 300% 100%;
+    animation: electric-move 3s linear infinite;
+  }
+
+  .electric-border::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -3px;
+    border-radius: 1.75rem;
+    background: linear-gradient(
+      90deg,
+      hsl(45 93% 47%),
+      hsl(280 90% 60%),
+      hsl(200 90% 50%),
+      hsl(45 93% 47%),
+      hsl(280 90% 60%),
+      hsl(200 90% 50%),
+      hsl(45 93% 47%)
+    );
+    background-size: 300% 100%;
+    animation: electric-move 3s linear infinite;
+    filter: blur(15px);
+    opacity: 0.7;
+  }
+
+  @keyframes electric-move {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 300% 50%;
+    }
+  }
+
+  /* Shimmer effect for micro-interaction */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(45 93% 47% / 0.3),
+      transparent
+    );
+    animation: shimmer 3s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  @keyframes shimmer {
+    0% { left: -100%; }
+    50%, 100% { left: 150%; }
+  }
+
+  /* Glow pulse on hover */
+  .glow-pulse {
+    transition: box-shadow 0.3s ease;
+  }
+
+  .glow-pulse:hover {
+    box-shadow: 0 0 30px hsl(45 93% 47% / 0.4), 0 0 60px hsl(280 90% 60% / 0.2);
+  }
 }

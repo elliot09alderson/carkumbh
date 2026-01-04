@@ -37,6 +37,8 @@ import {
   ChevronDown,
   Sparkles,
   Menu,
+  Smartphone,
+  GraduationCap,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 
@@ -66,22 +68,22 @@ const Index = () => {
         "Master the art of persuasion and impactful communication that drives results.",
     },
     {
-      icon: Target,
-      title: "Goal Setting",
-      description:
-        "Define clear objectives and create actionable roadmaps to achieve success.",
-    },
-    {
       icon: TrendingUp,
       title: "Marketing Strategy",
       description:
         "Innovative marketing approaches that amplify your brand presence.",
     },
     {
-      icon: Rocket,
-      title: "Startup Mentoring",
+      icon: Smartphone,
+      title: "Software Development & AI Solutions",
       description:
-        "Navigate the entrepreneurial journey with expert guidance and support.",
+        "Build cutting-edge mobile apps and AI-powered applications with our expert IT services team.",
+    },
+    {
+      icon: GraduationCap,
+      title: "Training & Certification Program",
+      description:
+        "Get industry-recognized certifications and hands-on training to advance your career.",
     },
   ];
 
@@ -193,6 +195,13 @@ const Index = () => {
             Contact
           </a>
           <Link
+            to="/certification-registration"
+            className="px-5 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/50 text-foreground rounded-full font-semibold hover:from-purple-500/30 hover:to-blue-500/30 hover:border-purple-500 transition-all duration-300 flex items-center gap-2"
+          >
+            <Brain className="w-4 h-4 text-purple-400" />
+            Learn Gen AI
+          </Link>
+          <Link
             to="/upcoming-event"
             className="px-6 py-2.5 bg-gradient-primary text-primary-foreground rounded-full font-bold hover:scale-105 hover:shadow-[0_0_20px_hsl(45_93%_47%_/_0.6)] transition-all duration-300 animate-pulse-fast flex items-center gap-2"
           >
@@ -247,6 +256,14 @@ const Index = () => {
                 Contact
               </a>
               <Link
+                to="/certification-registration"
+                className="w-full py-3 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/50 text-foreground rounded-lg font-bold text-center flex items-center justify-center gap-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Brain className="w-5 h-5 text-purple-400" />
+                Learn Gen AI
+              </Link>
+              <Link
                 to="/upcoming-event"
                 className="w-full py-3 bg-gradient-primary text-primary-foreground rounded-lg font-bold text-center flex items-center justify-center gap-2"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -258,6 +275,32 @@ const Index = () => {
           )}
         </AnimatePresence>
       </nav>
+
+      {/* Marquee Offer Banner */}
+      <Link 
+        to="/certification-registration"
+        className="fixed top-[72px] left-0 right-0 z-40 bg-gradient-to-r from-purple-600 via-primary to-purple-600 py-2 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+      >
+        <div className="flex animate-marquee whitespace-nowrap">
+          {[...Array(10)].map((_, i) => (
+            <span key={i} className="mx-8 flex items-center gap-3 text-white font-semibold">
+              <span className="text-lg">🧠</span>
+              Learn Gen AI for FREE
+              <span className="text-yellow-300">•</span>
+              <span className="text-lg">🏆</span>
+              Get a chance to win
+              <span className="text-yellow-300 font-bold text-lg">₹50,000</span>
+              <span className="text-yellow-300">•</span>
+              <span className="text-lg">🚀</span>
+              Register Now!
+              <span className="text-yellow-300 mx-4">★</span>
+            </span>
+          ))}
+        </div>
+      </Link>
+
+      {/* Spacer for fixed marquee */}
+      <div className="h-[40px]" />
 
       {/* Hero Section */}
       <section className="min-h-screen flex flex-col items-center justify-center px-4 relative pt-20">
@@ -336,14 +379,16 @@ const Index = () => {
                 Register for Event <ChevronRight className="w-5 h-5" />
               </motion.button>
             </Link>
-            <motion.a
-              href="#about"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 border border-primary/50 text-foreground text-lg font-semibold rounded-full flex items-center gap-2 hover:bg-primary/10 transition-colors"
-            >
-              Learn More
-            </motion.a>
+            <Link to="/certification-registration">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-8 py-4 border border-purple-500/50 bg-gradient-to-r from-purple-500/10 to-blue-500/10 text-foreground text-lg font-semibold rounded-full flex items-center gap-2 hover:from-purple-500/20 hover:to-blue-500/20 hover:border-purple-500 transition-all"
+              >
+                <Brain className="w-5 h-5 text-purple-400" />
+                Learn Gen AI
+              </motion.button>
+            </Link>
           </motion.div>
         </motion.div>
 
@@ -367,6 +412,33 @@ const Index = () => {
           </motion.div>
         </motion.div>
       </section>
+
+
+      {/* Image Banner */}
+      <section className="py-4 px-4">
+        <Link to="/certification-registration">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            whileHover={{ scale: 1.01 }}
+            className="max-w-5xl mx-auto"
+          >
+            <div className="rounded-3xl electric-border glow-pulse cursor-pointer">
+              <div className="rounded-3xl overflow-hidden shimmer bg-card relative z-10">
+                <img
+                  src="/images/banners/image.png"
+                  alt="Banner"
+                  className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
+                />
+              </div>
+            </div>
+          </motion.div>
+        </Link>
+      </section>
+
+
 
       {/* About Section */}
       <section id="about" className="py-32 px-4 relative">

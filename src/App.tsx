@@ -12,6 +12,8 @@ import RefundPolicy from "./pages/RefundPolicy";
 import TermsConditions from "./pages/TermsConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import UpcomingEvent from "./pages/UpcomingEvent";
+import CertificationRegistration from "./pages/CertificationRegistration";
+
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,7 @@ const App = () => (
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/upcoming-event" element={<UpcomingEvent />} />
+            <Route path="/certification-registration" element={<CertificationRegistration />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
