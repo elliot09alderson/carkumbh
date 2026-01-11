@@ -28,7 +28,7 @@ const teamMembers = [
   {
     name: "Ehtesham Danish",
     role: "Full Stack Developer",
-    image: "/Experts/Ehtesham Danish Full Stack Developer .jpeg",
+    image: "/Experts/Ehthesham danish.png",
     skills: ["MERN Stack", "UI/UX Design", "API Development", "Redux"],
     color: "from-green-500 to-emerald-500",
   },

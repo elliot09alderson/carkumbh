@@ -15,7 +15,7 @@ const certifiedStudents = [
   {
     name: "Dushyant",
     course: "AI / Vibe Coding + DSA",
-    image: "/students/Dushyant student .jpeg",
+    image: "/students/Dushyant student.jpeg",
     color: "from-purple-500 to-pink-600",
     description: "Mastered the intersection of Generative AI and algorithms.",
     review: "Amazing curriculum that bridges AI and core engineering. This course definitely prepared me for the future of coding.",
