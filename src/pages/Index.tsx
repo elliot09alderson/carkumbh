@@ -178,43 +178,7 @@ const Index = () => {
     },
   ];
 
-  const teamMembers = [
-    {
-      name: "Pratik Verma",
-      role: "SDE 3",
-      image: "/Experts/Pratik SDE 3.jpeg",
-      skills: ["System Design", "Cloud Architecture", "Backend Scaling", "Mentorship"],
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      name: "Khilendra",
-      role: "AI Engineer",
-      image: "/Experts/Khilendra AI Engineer .jpeg",
-      skills: ["Generative AI", "LLMs", "Python", "Computer Vision"],
-      color: "from-purple-500 to-pink-500",
-    },
-    {
-      name: "Dageshwar",
-      role: "SDE 2 Full Stack Developer",
-      image: "/Experts/Dageshwar SDE 2 Full Stack Developer.jpeg",
-      skills: ["React.js", "Node.js", "PostgreSQL", "Next.js"],
-      color: "from-orange-500 to-red-500",
-    },
-    {
-      name: "Ehtesham Danish",
-      role: "Full Stack Developer",
-      image: "/Experts/Ehtesham Danish Full Stack Developer .jpeg",
-      skills: ["MERN Stack", "UI/UX Design", "API Development", "Redux"],
-      color: "from-green-500 to-emerald-500",
-    },
-    {
-      name: "Nitish Mishra",
-      role: "Full Stack Developer",
-      image: "/Experts/Nitish Full Stack Developer.jpeg",
-      skills: ["Full Stack Dev", "TypeScript", "Problem Solving", "Architecture"],
-      color: "from-indigo-500 to-blue-500",
-    },
-  ];
+
 
   const certifiedStudents = [
     {
@@ -294,12 +258,18 @@ const Index = () => {
           >
             Services
           </a>
-          <a
-            href="#testimonials"
+          <Link
+            to="/our-team"
             className="text-foreground/80 hover:text-primary transition-colors font-medium"
           >
-            Testimonials
-          </a>
+            Our Team
+          </Link>
+          <Link
+            to="/toran-sir-school"
+            className="text-foreground/80 hover:text-primary transition-colors font-medium"
+          >
+            Toran Sir School
+          </Link>
           <a
             href="#contact"
             className="text-foreground/80 hover:text-primary transition-colors font-medium"
@@ -353,13 +323,20 @@ const Index = () => {
               >
                 Services
               </a>
-              <a
-                href="#testimonials"
+              <Link
+                to="/our-team"
                 className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Testimonials
-              </a>
+                Our Team
+              </Link>
+              <Link
+                to="/toran-sir-school"
+                className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Toran Sir School
+              </Link>
               <a
                 href="#contact"
                 className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
@@ -716,26 +693,43 @@ const Index = () => {
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="group p-8 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-500 hover-lift"
-              >
-                <div className="w-14 h-14 rounded-xl bg-gradient-primary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-                  <service.icon className="w-7 h-7 text-primary-foreground" />
+            {services.map((service, index) => {
+              const content = (
+                <div className="group p-8 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-500 hover-lift h-full">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-primary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                    <service.icon className="w-7 h-7 text-primary-foreground" />
+                  </div>
+                  <h3 className="text-xl font-bold font-heading mb-3">
+                    {service.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {service.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold font-heading mb-3">
-                  {service.title}
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {service.description}
-                </p>
-              </motion.div>
-            ))}
+              );
+
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  {service.title === "Software Development & AI Solutions" ? (
+                    <Link to="/our-team">
+                      {content}
+                    </Link>
+                  ) : service.title === "Training & Certification Program" ? (
+                    <Link to="/toran-sir-school">
+                      {content}
+                    </Link>
+                  ) : (
+                    content
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -1139,218 +1133,109 @@ const Index = () => {
         </div>
       </section>
 
-      {/* IT Team Section */}
-      <section className="py-24 px-4 bg-background relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px]" />
-        </div>
+      {/* IT Team Section - HIDDEN FROM HOME PAGE (Moved to /our-team) */}
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <p className="text-primary font-accent text-lg italic mb-2">
-              The Minds Behind the Tech
-            </p>
-            <h2 className="text-4xl md:text-5xl font-bold font-heading mb-4">
-              Meet Our <span className="text-gradient">IT TEAM</span>
-            </h2>
-            <div className="artistic-line mx-auto" />
-          </motion.div>
 
-          <div className="flex flex-wrap justify-center gap-8">
-            {teamMembers.map((member, index) => (
+      {/* Sections moved to Toran Sir School per user request (Top Certified Students & Recent Certifications) */}
+      {false && (
+        <>
+          <section className="py-32 px-4 bg-gradient-to-b from-background via-secondary/10 to-background overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="max-w-7xl mx-auto">
               <motion.div
-                key={index}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
-                className="group relative w-full md:w-[calc(50%-2rem)] lg:w-[calc(33.33%-2rem)] max-w-[400px]"
+                className="text-center mb-20"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${member.color} blur-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-3xl`} />
-                <div className="relative bg-card/40 backdrop-blur-md border border-border/50 p-8 rounded-3xl hover:border-primary/50 transition-all duration-300 h-full flex flex-col items-center">
-                  {/* Circle Image */}
-                  <div className="relative mb-6">
-                    <div className={`absolute inset-0 bg-gradient-to-br ${member.color} rounded-full blur-md opacity-20 group-hover:opacity-40 transition-opacity`} />
-                    <div className="w-40 h-40 rounded-full overflow-hidden border-2 border-primary/20 group-hover:border-primary/50 transition-colors relative z-10">
-                      <img 
-                        src={member.image} 
-                        alt={member.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                    </div>
-                  </div>
-
-                  <h3 className="text-xl font-bold font-heading mb-1 text-center group-hover:text-primary transition-colors">
-                    {member.name}
-                  </h3>
-                  <p className="text-primary font-semibold text-sm mb-4 uppercase tracking-wider text-center">
-                    {member.role}
-                  </p>
-                  
-                  <div className="w-full space-y-2 mt-auto">
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest text-center mb-3">
-                      Expertised Skills
-                    </p>
-                    <div className="flex flex-wrap justify-center gap-2">
-                      {member.skills.map((skill, sIdx) => (
-                        <span 
-                          key={sIdx}
-                          className="px-3 py-1 bg-secondary/50 text-[10px] font-medium rounded-full border border-border/50 group-hover:border-primary/30 transition-colors text-muted-foreground group-hover:text-foreground"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                <p className="text-primary font-accent text-lg italic mb-2">Our Success Stories</p>
+                <h2 className="text-4xl md:text-6xl font-bold font-heading mb-4">Top <span className="text-gradient">Certified</span> Students</h2>
+                <div className="artistic-line mx-auto" />
               </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Top Certified Students Section */}
-      <section className="py-32 px-4 bg-gradient-to-b from-background via-secondary/10 to-background overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-        
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-20"
-          >
-            <p className="text-primary font-accent text-lg italic mb-2">
-              Our Success Stories
-            </p>
-            <h2 className="text-4xl md:text-6xl font-bold font-heading mb-4">
-              Top <span className="text-gradient">Certified</span> Students
-            </h2>
-            <div className="artistic-line mx-auto" />
-          </motion.div>
-
-          {/* Flipping Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {certifiedStudents.map((student, index) => (
-              <motion.div
-                key={student.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="group h-[420px] [perspective:1000px]"
-              >
-                <div className="relative h-full w-full transition-all duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
-                  {/* Front Side */}
-                  <div className="absolute inset-0 h-full w-full rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 [backface-visibility:hidden]">
-                    <img 
-                      src={student.image} 
-                      alt={student.name}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground">
-                          Certified Expert
-                        </span>
-                        <CheckCircle className="w-3.5 h-3.5 text-green-400" />
-                      </div>
-                      <h3 className="text-xl font-bold font-heading mb-0.5">{student.name}</h3>
-                      <p className="text-md font-medium text-primary">
-                        {student.course}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Back Side (Review) */}
-                  <div className="absolute inset-0 h-full w-full rounded-[2rem] bg-card p-8 shadow-2xl border border-primary/20 [transform:rotateY(180deg)] [backface-visibility:hidden]">
-                    <div className="h-full flex flex-col justify-between relative overflow-hidden">
-                      {/* Decorative Background Elements */}
-                      <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
-                      <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-primary/5 blur-2xl rounded-full" />
-                      
-                      <div>
-                        <Quote className="w-10 h-10 text-primary/20 mb-4" />
-                        <h4 className="text-lg font-bold font-heading mb-3 text-foreground">Academy Review</h4>
-                        <p className="text-muted-foreground text-md leading-relaxed italic line-clamp-6">
-                          "{student.review}"
-                        </p>
-                      </div>
-
-                      <div className="pt-6 border-t border-border/50">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shadow-lg">
-                            <User className="w-5 h-5 text-primary" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                {certifiedStudents.map((student, index) => (
+                  <motion.div
+                    key={student.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className="group h-[420px] [perspective:1000px]"
+                  >
+                    <div className="relative h-full w-full transition-all duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
+                      <div className="absolute inset-0 h-full w-full rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 [backface-visibility:hidden]">
+                        <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                        <div className="absolute inset-x-0 bottom-0 p-6 text-white">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground">Certified Expert</span>
+                            <CheckCircle className="w-3.5 h-3.5 text-green-400" />
                           </div>
+                          <h3 className="text-xl font-bold font-heading mb-0.5">{student.name}</h3>
+                          <p className="text-md font-medium text-primary">{student.course}</p>
+                        </div>
+                      </div>
+                      <div className="absolute inset-0 h-full w-full rounded-[2rem] bg-card p-8 shadow-2xl border border-primary/20 [transform:rotateY(180deg)] [backface-visibility:hidden]">
+                        <div className="h-full flex flex-col justify-between relative overflow-hidden">
                           <div>
-                            <p className="font-bold text-foreground text-sm">{student.name}</p>
-                            <p className="text-xs text-primary/80">{student.course} Student</p>
+                            <Quote className="w-10 h-10 text-primary/20 mb-4" />
+                            <h4 className="text-lg font-bold font-heading mb-3 text-foreground">Academy Review</h4>
+                            <p className="text-muted-foreground text-md leading-relaxed italic line-clamp-6">"{student.review}"</p>
+                          </div>
+                          <div className="pt-6 border-t border-border/50">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shadow-lg">
+                                <User className="w-5 h-5 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-bold text-foreground text-sm">{student.name}</p>
+                                <p className="text-xs text-primary/80">{student.course} Student</p>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  </motion.div>
+                ))}
+              </div>
+              <div className="mt-20 text-center">
+                <p className="text-muted-foreground text-sm font-medium tracking-[0.2em] uppercase flex items-center justify-center gap-4">
+                  <span className="h-px w-8 bg-border" />
+                  Hover to read their experiences
+                  <span className="h-px w-8 bg-border" />
+                </p>
+              </div>
+            </div>
+          </section>
 
-          <div className="mt-20 text-center">
-            <p className="text-muted-foreground text-sm font-medium tracking-[0.2em] uppercase flex items-center justify-center gap-4">
-              <span className="h-px w-8 bg-border" />
-              Hover to read their experiences
-              <span className="h-px w-8 bg-border" />
-            </p>
-          </div>
-        </div>
-      </section>
- 
-      {/* Recent Certifications Marquee Section */}
-      <section className="py-20 bg-background relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 mb-12 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <h3 className="text-2xl md:text-3xl font-bold font-heading text-foreground/80 mb-4">
-              Recent <span className="text-primary italic">Certifications</span>
-            </h3>
-            <div className="artistic-line mx-auto opacity-50" />
-          </motion.div>
-        </div>
- 
-        <div className="relative mask-gradient-x">
-          <div className="flex animate-marquee gap-8 py-10 w-fit">
-            {[...certificates, ...certificates].map((cert, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ scale: 1.1, zIndex: 10, rotate: 2 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className="relative flex-shrink-0 w-72 md:w-[450px] aspect-[1.414/1] rounded-lg overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/5 group bg-card"
-              >
-                <img 
-                  src={cert} 
-                  alt={`Certificate ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-                {/* Vignette Overlay */}
-                <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.4)] pointer-events-none group-hover:shadow-[inset_0_0_150px_rgba(0,0,0,0.2)] transition-shadow duration-500" />
-                <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          <section className="py-20 bg-background relative overflow-hidden">
+            <div className="max-w-7xl mx-auto px-4 mb-12 text-center">
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
+                <h3 className="text-2xl md:text-3xl font-bold font-heading text-foreground/80 mb-4">Recent <span className="text-primary italic">Certifications</span></h3>
+                <div className="artistic-line mx-auto opacity-50" />
               </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </div>
+            <div className="relative mask-gradient-x">
+              <div className="flex animate-marquee gap-8 py-10 w-fit">
+                {[...certificates, ...certificates].map((cert, index) => (
+                  <motion.div
+                    key={index}
+                    whileHover={{ scale: 1.1, zIndex: 10, rotate: 2 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    className="relative flex-shrink-0 w-72 md:w-[450px] aspect-[1.414/1] rounded-lg overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/5 group bg-card"
+                  >
+                    <img src={cert} alt={`Certificate ${index + 1}`} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.4)] pointer-events-none group-hover:shadow-[inset_0_0_150px_rgba(0,0,0,0.2)] transition-shadow duration-500" />
+                    <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </>
+      )}
  
       {/* Live Community Wall Section */}
       <section className="py-24 bg-gradient-to-b from-background to-secondary/10 relative overflow-hidden">

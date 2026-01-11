@@ -13,6 +13,8 @@ import TermsConditions from "./pages/TermsConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import UpcomingEvent from "./pages/UpcomingEvent";
 import CertificationRegistration from "./pages/CertificationRegistration";
+import OurTeam from "./pages/OurTeam";
+import ToranSirSchool from "./pages/ToranSirSchool";
 
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/upcoming-event" element={<UpcomingEvent />} />
             <Route path="/certification-registration" element={<CertificationRegistration />} />
+            <Route path="/our-team" element={<OurTeam />} />
+            <Route path="/toran-sir-school" element={<ToranSirSchool />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
