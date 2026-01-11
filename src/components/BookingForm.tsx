@@ -9,6 +9,7 @@ import { Sparkles, CreditCard, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { createBooking } from "@/api/bookings";
 import { createOrder, verifyPayment } from "@/api/payments";
+import { getEventPackages, EventPackage } from "@/api/siteConfig";
 
 declare global {
   interface Window {
@@ -27,13 +28,32 @@ const BookingForm = () => {
     name: "",
     number: "",
     address: "",
-    package: "499",
+    package: "500", // Default to lowest package
     paymentMode: "cash",
   });
+  const [packages, setPackages] = useState<EventPackage[]>([]);
   const [token, setToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const { toast } = useToast();
+
+  // Load packages
+  useEffect(() => {
+    const loadPackages = async () => {
+      try {
+        const data = await getEventPackages();
+        setPackages(data);
+        if (data.length > 0) {
+          // Set standard package (usually the middle one) or first one as default
+          const defaultPkg = data.find((p: any) => p.price === '10000') || data[0];
+          setFormData(prev => ({ ...prev, package: defaultPkg.price }));
+        }
+      } catch (error) {
+        console.error("Failed to load packages", error);
+      }
+    };
+    loadPackages();
+  }, []);
 
   // Load Razorpay script
   useEffect(() => {
@@ -249,7 +269,7 @@ const BookingForm = () => {
                     name: "",
                     number: "",
                     address: "",
-                    package: "499",
+                    package: packages.length > 0 ? packages[0].price : "500",
                     paymentMode: "cash",
                   });
                 }}
@@ -336,68 +356,34 @@ const BookingForm = () => {
                 onValueChange={(value) =>
                   setFormData({ ...formData, package: value })
                 }
-                className="grid grid-cols-3 gap-4"
+                className="grid grid-cols-1 sm:grid-cols-3 gap-4"
               >
-                <Label
-                  htmlFor="package-499"
-                  className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    formData.package === "499"
-                      ? "border-primary bg-primary/10 shadow-glow"
-                      : "border-border/50 bg-secondary/30 hover:border-border"
-                  }`}
-                >
-                  <RadioGroupItem
-                    value="499"
-                    id="package-499"
-                    className="sr-only"
-                  />
-                  <div className="text-center">
-                    <span className="text-2xl font-bold block">₹499</span>
-                    <span className="text-sm text-muted-foreground">
-                      Premium
-                    </span>
-                  </div>
-                </Label>
-                <Label
-                  htmlFor="package-999"
-                  className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    formData.package === "999"
-                      ? "border-primary bg-primary/10 shadow-glow"
-                      : "border-border/50 bg-secondary/30 hover:border-border"
-                  }`}
-                >
-                  <RadioGroupItem
-                    value="999"
-                    id="package-999"
-                    className="sr-only"
-                  />
-                  <div className="text-center">
-                    <span className="text-2xl font-bold block">₹999</span>
-                    <span className="text-sm text-muted-foreground">
-                      Standard
-                    </span>
-                  </div>
-                </Label>
-                <Label
-                  htmlFor="package-10000"
-                  className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    formData.package === "10000"
-                      ? "border-primary bg-primary/10 shadow-glow"
-                      : "border-border/50 bg-secondary/30 hover:border-border"
-                  }`}
-                >
-                  <RadioGroupItem
-                    value="10000"
-                    id="package-10000"
-                    className="sr-only"
-                  />
-                  <div className="text-center">
-                    <span className="text-2xl font-bold block">₹10000</span>
-                    <span className="text-sm text-muted-foreground">
-                      VIP
-                    </span>
-                  </div>
-                </Label>
+                {packages.map((pkg) => (
+                  <Label
+                    key={pkg.id}
+                    htmlFor={`package-${pkg.price}`}
+                    className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                      formData.package === pkg.price
+                        ? "border-primary bg-primary/10 shadow-glow"
+                        : "border-border/50 bg-secondary/30 hover:border-border"
+                    }`}
+                  >
+                    <RadioGroupItem
+                      value={pkg.price}
+                      id={`package-${pkg.price}`}
+                      className="sr-only"
+                    />
+                    <div className="text-center">
+                      <span className="text-2xl font-bold block">₹{pkg.price}</span>
+                      <span className="text-sm text-primary font-bold block">{pkg.name}</span>
+                      <div className="text-[10px] text-muted-foreground mt-1 space-y-0.5">
+                        <p className="font-bold text-foreground/70">{pkg.duration}</p>
+                        <p>{pkg.onlineSessions} Online Classes</p>
+                        <p>{pkg.liveSessions} Live Classes</p>
+                      </div>
+                    </div>
+                  </Label>
+                ))}
               </RadioGroup>
             </motion.div>
 

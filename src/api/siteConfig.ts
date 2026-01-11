@@ -62,3 +62,27 @@ export const updateWorkshopContent = async (content: WorkshopContent, token: str
   });
   return response.data;
 };
+
+// Event Packages
+export interface EventPackage {
+  id: string;
+  name: string;
+  price: string;
+  duration: string;
+  onlineSessions: string;
+  liveSessions: string;
+}
+
+export const getEventPackages = async (): Promise<EventPackage[]> => {
+  const response = await axios.get(`${API_URL}/config/event-packages`);
+  return response.data;
+};
+
+export const updateEventPackages = async (packages: EventPackage[], token: string): Promise<EventPackage[]> => {
+  const response = await axios.post(`${API_URL}/config/event-packages`, { packages }, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};

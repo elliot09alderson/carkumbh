@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { getWorkshopBanner, getWorkshopContent, WorkshopContent } from "@/api/siteConfig";
+import { registerStudent } from "@/api/students";
+import { useToast } from "@/hooks/use-toast";
 
 interface FormData {
   studentName: string;
@@ -59,6 +61,7 @@ const CertificationRegistration = () => {
     whatsappGroupLink: 'https://chat.whatsapp.com/Eu63xdXtVaj8sFBCyLDfZa',
   });
   const [isLoadingContent, setIsLoadingContent] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     loadWorkshopData();
@@ -164,9 +167,18 @@ const CertificationRegistration = () => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    setIsRegistered(true);
+    try {
+      await registerStudent(formData as any);
+      setIsRegistered(true);
+    } catch (error: any) {
+      toast({
+        title: "Registration Failed",
+        description: error.response?.data?.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (
