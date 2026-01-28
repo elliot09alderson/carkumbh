@@ -71,6 +71,7 @@ export interface EventPackage {
   duration: string;
   onlineSessions: string;
   liveSessions: string;
+  whatsappLink?: string;
 }
 
 export const getEventPackages = async (): Promise<EventPackage[]> => {

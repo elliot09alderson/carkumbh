@@ -1077,7 +1077,8 @@ const Admin = () => {
                         price: '1000',
                         duration: '1 Month',
                         onlineSessions: '4',
-                        liveSessions: '1'
+                        liveSessions: '1',
+                        whatsappLink: ''
                       };
                       setEventPackages([...eventPackages, newPkg]);
                     }}
@@ -1195,6 +1196,22 @@ const Admin = () => {
                           }}
                           className="bg-card/50 focus:ring-1 focus:ring-primary"
                         />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">WhatsApp Group Link</label>
+                        <Input 
+                          type="url"
+                          value={pkg.whatsappLink || ''} 
+                          placeholder="https://chat.whatsapp.com/..."
+                          onChange={(e) => {
+                            const newPkgs = [...eventPackages];
+                            newPkgs[index].whatsappLink = e.target.value;
+                            setEventPackages(newPkgs);
+                          }}
+                          className="bg-card/50 focus:ring-1 focus:ring-primary"
+                        />
+                        <p className="text-[10px] text-muted-foreground">Users will see "Join WhatsApp Group" after registration</p>
                       </div>
                     </div>
                   </motion.div>
