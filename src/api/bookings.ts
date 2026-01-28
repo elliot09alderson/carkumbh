@@ -57,3 +57,13 @@ export const togglePaidStatus = async (id: string): Promise<Booking> => {
 export const deleteBooking = async (id: string): Promise<void> => {
   await api.delete(`/bookings/${id}`);
 };
+
+export const deleteAllBookings = async (): Promise<{ message: string }> => {
+  const { data } = await api.delete('/bookings/all');
+  return data;
+};
+
+export const deleteBookingsByPackage = async (packageType: string): Promise<{ message: string }> => {
+  const { data } = await api.delete(`/bookings/by-package/${packageType}`);
+  return data;
+};

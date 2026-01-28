@@ -37,7 +37,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAllBookings, togglePaidStatus as apiTogglePaidStatus, Booking } from '@/api/bookings';
+import { getAllBookings, togglePaidStatus as apiTogglePaidStatus, Booking, deleteAllBookings as apiDeleteAllBookings, deleteBookingsByPackage as apiDeleteBookingsByPackage, deleteBooking as apiDeleteBooking } from '@/api/bookings';
 import { getAllStudents, Student } from '@/api/students';
 import { 
   getBanner, 
@@ -469,6 +469,88 @@ const Admin = () => {
     setStatusFilter('all');
   };
 
+  const handleDeleteBooking = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this booking?')) return;
+    
+    try {
+      await apiDeleteBooking(id);
+      setBookings(bookings.filter(b => b._id !== id));
+      toast({
+        title: "Success",
+        description: "Booking deleted successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to delete booking",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteAllBookings = async () => {
+    if (!window.confirm(`Are you sure you want to delete ALL ${bookings.length} bookings? This action cannot be undone!`)) return;
+    if (!window.confirm('This is your final warning. ALL bookings will be permanently deleted. Continue?')) return;
+    
+    try {
+      const result = await apiDeleteAllBookings();
+      setBookings([]);
+      toast({
+        title: "Success",
+        description: result.message,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to delete bookings",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteByPackage = async () => {
+    if (packageFilter === 'all') {
+      toast({
+        title: "Select a Package",
+        description: "Please select a specific package to delete",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const count = filteredBookings.length;
+    if (!window.confirm(`Are you sure you want to delete ${count} bookings with package ₹${packageFilter}?`)) return;
+    
+    try {
+      const result = await apiDeleteBookingsByPackage(packageFilter);
+      setBookings(bookings.filter(b => b.package !== packageFilter));
+      setPackageFilter('all');
+      toast({
+        title: "Success",
+        description: result.message,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to delete bookings",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Combine configured packages with packages from existing bookings for the filter
+  const allPackagesForFilter = useMemo(() => {
+    // Get configured package prices
+    const configuredPrices = eventPackages.map(pkg => pkg.price);
+    // Get unique prices from existing bookings
+    const bookingPrices = [...new Set(bookings.map(b => b.package))];
+    // Combine and deduplicate
+    const allPrices = [...new Set([...configuredPrices, ...bookingPrices])];
+    // Sort by price
+    return allPrices.sort((a, b) => parseInt(a) - parseInt(b));
+  }, [eventPackages, bookings]);
+
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -577,9 +659,11 @@ const Admin = () => {
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
                   <h2 className="text-3xl font-bold">Booking Dashboard</h2>
-                  <p className="text-muted-foreground">Manage service bookings and payments</p>
+                  <p className="text-muted-foreground">
+                    Showing {filteredBookings.length} of {bookings.length} bookings
+                  </p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   <Button onClick={exportCSV} variant="outline" className="bg-card">
                     <FileSpreadsheet className="mr-2 h-4 w-4" />
                     CSV
@@ -588,12 +672,29 @@ const Admin = () => {
                     <FileText className="mr-2 h-4 w-4" />
                     PDF
                   </Button>
+                  <Button 
+                    onClick={handleDeleteByPackage} 
+                    variant="outline" 
+                    className="bg-card border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
+                    disabled={packageFilter === 'all'}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete by Package
+                  </Button>
+                  <Button 
+                    onClick={handleDeleteAllBookings} 
+                    variant="destructive" 
+                    disabled={bookings.length === 0}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete All
+                  </Button>
                 </div>
               </div>
 
               {/* Booking Filters */}
               <Card className="p-4 mb-8 bg-card/50 backdrop-blur-sm border-border/50">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                   <div className="relative col-span-1 md:col-span-2">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -603,6 +704,15 @@ const Admin = () => {
                       className="pl-10"
                     />
                   </div>
+                  <Select value={packageFilter} onValueChange={setPackageFilter}>
+                    <SelectTrigger><SelectValue placeholder="Package" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Packages</SelectItem>
+                      {allPackagesForFilter.map((price) => (
+                        <SelectItem key={price} value={price}>₹{price}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Select value={paymentFilter} onValueChange={setPaymentFilter}>
                     <SelectTrigger><SelectValue placeholder="Mode" /></SelectTrigger>
                     <SelectContent>
@@ -620,6 +730,17 @@ const Admin = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                {(searchQuery || packageFilter !== 'all' || paymentFilter !== 'all' || statusFilter !== 'all') && (
+                  <div className="mt-4 flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">
+                      <Filter className="inline h-4 w-4 mr-1" />
+                      Filters active
+                    </p>
+                    <Button variant="ghost" size="sm" onClick={clearFilters}>
+                      Clear Filters
+                    </Button>
+                  </div>
+                )}
               </Card>
 
               {/* Bookings List */}
@@ -631,7 +752,7 @@ const Admin = () => {
                 ) : (
                   filteredBookings.map((booking) => (
                     <Card key={booking._id} className="p-6 hover:border-primary/50 transition-all bg-card/50">
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                         <div>
                           <p className="text-xs font-bold text-primary uppercase mb-1">Token</p>
                           <p className="text-xl font-black">{booking.token}</p>
@@ -656,6 +777,16 @@ const Admin = () => {
                           <p className="text-[10px] text-muted-foreground mt-2">
                             {new Date(booking.createdAt).toLocaleString()}
                           </p>
+                        </div>
+                        <div className="flex items-center justify-end">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDeleteBooking(booking._id)}
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </Button>
                         </div>
                       </div>
                       <div className="mt-4 pt-4 border-t border-border flex justify-between items-center">

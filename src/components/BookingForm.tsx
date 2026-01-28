@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card } from "@/components/ui/card";
-import { Sparkles, CreditCard, Wallet } from "lucide-react";
+import { Sparkles, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { createBooking } from "@/api/bookings";
 import { createOrder, verifyPayment } from "@/api/payments";
@@ -29,7 +29,7 @@ const BookingForm = () => {
     number: "",
     address: "",
     package: "500", // Default to lowest package
-    paymentMode: "cash",
+    paymentMode: "online",
   });
   const [packages, setPackages] = useState<EventPackage[]>([]);
   const [token, setToken] = useState("");
@@ -270,7 +270,7 @@ const BookingForm = () => {
                     number: "",
                     address: "",
                     package: packages.length > 0 ? packages[0].price : "500",
-                    paymentMode: "cash",
+                    paymentMode: "online",
                   });
                 }}
                 className="bg-primary hover:bg-primary/90"
@@ -387,57 +387,7 @@ const BookingForm = () => {
               </RadioGroup>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.6 }}
-            >
-              <Label className="text-foreground mb-3 block">Payment Mode</Label>
-              <RadioGroup
-                value={formData.paymentMode}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, paymentMode: value })
-                }
-                className="grid grid-cols-2 gap-4"
-              >
-                <Label
-                  htmlFor="payment-cash"
-                  className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    formData.paymentMode === "cash"
-                      ? "border-primary bg-primary/10 shadow-glow"
-                      : "border-border/50 bg-secondary/30 hover:border-border"
-                  }`}
-                >
-                  <RadioGroupItem
-                    value="cash"
-                    id="payment-cash"
-                    className="sr-only"
-                  />
-                  <div className="flex items-center gap-2">
-                    <Wallet className="w-5 h-5" />
-                    <span className="font-semibold">Cash</span>
-                  </div>
-                </Label>
-                <Label
-                  htmlFor="payment-online"
-                  className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    formData.paymentMode === "online"
-                      ? "border-primary bg-primary/10 shadow-glow"
-                      : "border-border/50 bg-secondary/30 hover:border-border"
-                  }`}
-                >
-                  <RadioGroupItem
-                    value="online"
-                    id="payment-online"
-                    className="sr-only"
-                  />
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="w-5 h-5" />
-                    <span className="font-semibold">Online</span>
-                  </div>
-                </Label>
-              </RadioGroup>
-            </motion.div>
+
 
             {formData.paymentMode === "online" && (
               <motion.div
