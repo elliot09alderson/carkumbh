@@ -144,6 +144,10 @@ const BookingForm = () => {
         package: formData.package,
       });
 
+      console.log("Order created:", orderData);
+      console.log("Order ID:", orderData.orderId);
+      console.log("Razorpay Key:", import.meta.env.VITE_RAZORPAY_KEY_ID);
+
       // Configure Razorpay options
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
