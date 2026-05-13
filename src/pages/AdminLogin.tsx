@@ -68,7 +68,7 @@ const AdminLogin = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@carkumbh.com"
+                  placeholder="Enter admin email"
                   required
                   className="mt-2"
                 />

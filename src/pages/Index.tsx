@@ -51,6 +51,7 @@ import {
 import { FaWhatsapp } from "react-icons/fa";
 import { useEffect } from "react";
 import { getPublicStudents, Student } from "@/api/students";
+import AdSlider from "@/components/AdSlider";
 
 const Index = () => {
   useSmoothScroll();
@@ -126,34 +127,11 @@ const Index = () => {
       image: "/carkumbhtstimonials/pitamber.jpeg",
     },
     {
-      name: "Prashant Singh",
-      role: "Sales Manager, Hyundai",
-      content:
-        "The communication training was a game-changer for my career. Highly recommended!",
-      image: "/carkumbhtstimonials/prashantsingh.jpeg",
-      imagePosition: "center",
-    },
-    {
-      name: "Dewa Sahu",
-      role: "Sales Manager, AU Finance",
-      content:
-        "One of the most impactful training sessions our team has ever experienced.",
-      image: "/carkumbhtstimonials/devasahu.jpeg",
-      imagePosition: "center",
-    },
-    {
       name: "Krishna Patel",
       role: "Entrepreneur",
       content:
         "Toran Sir's guidance helped me build my business with confidence and clarity.",
       image: "/carkumbhtstimonials/kirshna.jpeg",
-    },
-    {
-      name: "Horilala Markam",
-      role: "Entrepreneur",
-      content:
-        "The training sessions gave me the skills and mindset to succeed as an entrepreneur.",
-      image: "/carkumbhtstimonials/horilal.jpeg",
     },
     {
       name: "Mr. Lala Ram Patel",
@@ -168,13 +146,6 @@ const Index = () => {
       content:
         "Toran Sir's expertise and dedication have made a significant impact on our team's performance.",
       image: "/carkumbhtstimonials/mahendra.jpeg",
-    },
-    {
-      name: "Ramesh Sinha",
-      role: "Development Manager, SBI Life Insurance",
-      content:
-        "Toran Sir's training programs have been instrumental in enhancing our team's performance.",
-      image: "/carkumbhtstimonials/RameshSinha.jpeg",
     },
   ];
 
@@ -500,29 +471,8 @@ const Index = () => {
       </section>
 
 
-      {/* Image Banner */}
-      <section className="py-4 px-4">
-        <Link to="/certification-registration">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            whileHover={{ scale: 1.01 }}
-            className="max-w-5xl mx-auto"
-          >
-            <div className="rounded-3xl electric-border glow-pulse cursor-pointer">
-              <div className="rounded-3xl overflow-hidden shimmer bg-card relative z-10">
-                <img
-                  src="/images/banners/image.png"
-                  alt="Banner"
-                  className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </div>
-            </div>
-          </motion.div>
-        </Link>
-      </section>
+      {/* Ad Slider */}
+      <AdSlider />
 
 
 

@@ -87,3 +87,64 @@ export const updateEventPackages = async (packages: EventPackage[], token: strin
   });
   return response.data;
 };
+
+export interface EventContent {
+  title: string;
+  description: string;
+  razorpayName: string;
+}
+
+export const getEventContent = async (): Promise<EventContent> => {
+  const response = await axios.get(`${API_URL}/config/event-content`);
+  return response.data;
+};
+
+export const updateEventContent = async (content: EventContent, token: string): Promise<EventContent> => {
+  const response = await axios.post(`${API_URL}/config/event-content`, content, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+export interface AdSlide {
+  id: string;
+  imageUrl: string;
+  navigationUrl: string;
+  order: number;
+}
+
+export const getAdSlides = async (): Promise<AdSlide[]> => {
+  const response = await axios.get(`${API_URL}/config/ad-slides`);
+  return response.data;
+};
+
+export const addAdSlide = async (
+  data: { imageUrl?: string; navigationUrl: string; image?: File },
+  token: string
+): Promise<AdSlide> => {
+  const formData = new FormData();
+  if (data.image) formData.append('image', data.image);
+  if (data.imageUrl) formData.append('imageUrl', data.imageUrl);
+  formData.append('navigationUrl', data.navigationUrl);
+  const response = await axios.post(`${API_URL}/config/ad-slides`, formData, {
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+export const deleteAdSlide = async (id: string, token: string): Promise<void> => {
+  await axios.delete(`${API_URL}/config/ad-slides/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const updateAdSlide = async (
+  id: string,
+  data: { navigationUrl: string },
+  token: string
+): Promise<AdSlide> => {
+  const response = await axios.put(`${API_URL}/config/ad-slides/${id}`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};

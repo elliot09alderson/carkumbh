@@ -34,29 +34,56 @@ import {
   Trash2,
   Menu,
   X,
+  QrCode,
+  Loader2,
+  ScanLine,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAllBookings, togglePaidStatus as apiTogglePaidStatus, Booking, deleteAllBookings as apiDeleteAllBookings, deleteBookingsByPackage as apiDeleteBookingsByPackage, deleteBooking as apiDeleteBooking } from '@/api/bookings';
 import { getAllStudents, Student } from '@/api/students';
-import { 
-  getBanner, 
-  updateBanner, 
-  getWorkshopBanner, 
+import {
+  getBanner,
+  updateBanner,
+  getWorkshopBanner,
   updateWorkshopBanner,
   getWorkshopContent,
   updateWorkshopContent,
   getEventPackages,
   updateEventPackages,
+  getAdSlides,
+  addAdSlide,
+  deleteAdSlide,
+  updateAdSlide,
   WorkshopContent,
-  EventPackage 
+  EventPackage,
+  AdSlide,
 } from '@/api/siteConfig';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import QRCode from 'qrcode';
+import JSZip from 'jszip';
+import TicketScanner from '@/components/TicketScanner';
 
 const Admin = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'site-settings' | 'students' | 'packages'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'site-settings' | 'students' | 'packages' | 'bulk-qr' | 'ad-banners' | 'ticket-scanner'>('dashboard');
+
+  // Bulk QR state
+  const [bulkQrCount, setBulkQrCount] = useState<string>('10');
+  const [bulkQrTickets, setBulkQrTickets] = useState<{ token: string; qrUrl: string }[]>([]);
+  const [isBulkGenerating, setIsBulkGenerating] = useState(false);
+  const [isBulkDownloading, setIsBulkDownloading] = useState(false);
+
+  // Ad Banners state
+  const [adSlides, setAdSlides] = useState<AdSlide[]>([]);
+  const [isAdSlidesLoading, setIsAdSlidesLoading] = useState(false);
+  const [newSlideImageUrl, setNewSlideImageUrl] = useState('');
+  const [newSlideNavUrl, setNewSlideNavUrl] = useState('/');
+  const [newSlideFile, setNewSlideFile] = useState<File | null>(null);
+  const [newSlidePreview, setNewSlidePreview] = useState<string>('');
+  const [isAddingSlide, setIsAddingSlide] = useState(false);
+  const [editNavUrls, setEditNavUrls] = useState<Record<string, string>>({});
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -108,6 +135,7 @@ const Admin = () => {
     loadWorkshopBanner();
     loadWorkshopContent();
     loadEventPackages();
+    loadAdSlides();
   }, [isAuthenticated, authLoading, navigate]);
 
   const loadEventPackages = async () => {
@@ -551,6 +579,182 @@ const Admin = () => {
   }, [eventPackages, bookings]);
 
 
+  const loadAdSlides = async () => {
+    setIsAdSlidesLoading(true);
+    try {
+      const data = await getAdSlides();
+      setAdSlides(data);
+      const navMap: Record<string, string> = {};
+      data.forEach((s) => { navMap[s.id] = s.navigationUrl; });
+      setEditNavUrls(navMap);
+    } catch (e) {
+      console.error('Failed to load ad slides', e);
+    } finally {
+      setIsAdSlidesLoading(false);
+    }
+  };
+
+  const handleAddSlide = async () => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) return;
+    if (!newSlideFile && !newSlideImageUrl) {
+      toast({ title: 'Error', description: 'Provide an image file or URL', variant: 'destructive' });
+      return;
+    }
+    setIsAddingSlide(true);
+    try {
+      await addAdSlide({ image: newSlideFile || undefined, imageUrl: newSlideImageUrl || undefined, navigationUrl: newSlideNavUrl }, token);
+      toast({ title: 'Success', description: 'Slide added' });
+      setNewSlideImageUrl('');
+      setNewSlideNavUrl('/');
+      setNewSlideFile(null);
+      setNewSlidePreview('');
+      await loadAdSlides();
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.response?.data?.message || 'Failed to add slide', variant: 'destructive' });
+    } finally {
+      setIsAddingSlide(false);
+    }
+  };
+
+  const handleDeleteSlide = async (id: string) => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) return;
+    try {
+      await deleteAdSlide(id, token);
+      toast({ title: 'Deleted', description: 'Slide removed' });
+      await loadAdSlides();
+    } catch (e: any) {
+      toast({ title: 'Error', description: 'Failed to delete slide', variant: 'destructive' });
+    }
+  };
+
+  const handleUpdateSlideNav = async (id: string) => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) return;
+    try {
+      await updateAdSlide(id, { navigationUrl: editNavUrls[id] }, token);
+      toast({ title: 'Saved', description: 'Navigation URL updated' });
+      await loadAdSlides();
+    } catch (e: any) {
+      toast({ title: 'Error', description: 'Failed to update slide', variant: 'destructive' });
+    }
+  };
+
+  const generateToken = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  };
+
+  const drawTicketCanvas = (token: string, qrDataUrl: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      const W = 600, H = 820;
+      canvas.width = W;
+      canvas.height = H;
+
+      ctx.fillStyle = '#0f0f0f';
+      ctx.fillRect(0, 0, W, H);
+
+      const grad = ctx.createLinearGradient(0, 0, W, 140);
+      grad.addColorStop(0, '#f97316');
+      grad.addColorStop(1, '#ea580c');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, 140);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = 'bold 22px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('EVENT TICKET', W / 2, 65);
+      ctx.font = '14px Arial';
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillText('toransir.com', W / 2, 95);
+
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      ctx.moveTo(30, 160);
+      ctx.lineTo(W - 30, 160);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#f97316';
+      ctx.font = 'bold 14px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('TOKEN', W / 2, 210);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 52px monospace';
+      ctx.fillText(token, W / 2, 270);
+
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '13px Arial';
+      ctx.fillText('Scan the QR code at the event entrance', W / 2, 310);
+
+      const qrImg = new window.Image();
+      qrImg.onload = () => {
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        (ctx as any).roundRect(W / 2 - 150, 335, 300, 300, 16);
+        ctx.fill();
+        ctx.drawImage(qrImg, W / 2 - 140, 345, 280, 280);
+
+        ctx.fillStyle = '#9ca3af';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('This ticket is non-transferable. Valid for one-time entry only.', W / 2, 670);
+
+        ctx.fillStyle = '#1f1f1f';
+        ctx.fillRect(0, H - 80, W, 80);
+        ctx.fillStyle = '#6b7280';
+        ctx.font = '12px Arial';
+        ctx.fillText('Generated on ' + new Date().toLocaleDateString('en-IN'), W / 2, H - 30);
+
+        resolve(canvas.toDataURL('image/png'));
+      };
+      qrImg.src = qrDataUrl;
+    });
+  };
+
+  const handleBulkGenerate = async () => {
+    const count = parseInt(bulkQrCount);
+    if (!count || count < 1 || count > 500) return;
+    setIsBulkGenerating(true);
+    setBulkQrTickets([]);
+    const tickets: { token: string; qrUrl: string }[] = [];
+    for (let i = 0; i < count; i++) {
+      const token = generateToken();
+      const qrUrl = await QRCode.toDataURL(token, {
+        width: 300,
+        margin: 2,
+        color: { dark: '#000000', light: '#ffffff' },
+        errorCorrectionLevel: 'H',
+      });
+      tickets.push({ token, qrUrl });
+    }
+    setBulkQrTickets(tickets);
+    setIsBulkGenerating(false);
+  };
+
+  const handleBulkDownload = async () => {
+    if (bulkQrTickets.length === 0) return;
+    setIsBulkDownloading(true);
+    const zip = new JSZip();
+    for (const ticket of bulkQrTickets) {
+      const dataUrl = await drawTicketCanvas(ticket.token, ticket.qrUrl);
+      const base64 = dataUrl.split(',')[1];
+      zip.file(`ticket-${ticket.token}.png`, base64, { base64: true });
+    }
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `tickets-${bulkQrTickets.length}-${Date.now()}.zip`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    setIsBulkDownloading(false);
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -616,7 +820,10 @@ const Admin = () => {
               { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
               { id: 'site-settings', icon: Settings, label: 'Site Settings' },
               { id: 'students', icon: Users, label: 'Registered Students' },
-              { id: 'packages', icon: Trophy, label: 'Manage Packages' }
+              { id: 'packages', icon: Trophy, label: 'Manage Packages' },
+              { id: 'ad-banners', icon: Image, label: 'Ad Banners' },
+              { id: 'ticket-scanner', icon: ScanLine, label: 'Ticket Scanner' },
+              { id: 'bulk-qr', icon: QrCode, label: 'Bulk QR Tickets' }
             ].map((item) => (
               <button
                 key={item.id}
@@ -1224,6 +1431,213 @@ const Admin = () => {
                   </Card>
                 )}
               </div>
+            </motion.div>
+          )}
+
+          {/* Ad Banners */}
+          {activeTab === 'ad-banners' && (
+            <motion.div
+              key="ad-banners"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-2xl font-bold">Ad Banners</h2>
+                <p className="text-muted-foreground text-sm mt-1">Manage auto-rotating ad slides shown on the homepage. Each slide links to a URL when clicked.</p>
+              </div>
+
+              {/* Add new slide */}
+              <Card className="p-6 bg-card/60 border-border/50 space-y-4">
+                <h3 className="font-semibold text-base">Add New Slide</h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Upload Image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0] || null;
+                        setNewSlideFile(f);
+                        if (f) {
+                          setNewSlidePreview(URL.createObjectURL(f));
+                          setNewSlideImageUrl('');
+                        }
+                      }}
+                      className="block w-full text-sm text-muted-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
+                    />
+                    <p className="text-xs text-muted-foreground">Or paste an image URL below</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Image URL (optional)</label>
+                    <Input
+                      value={newSlideImageUrl}
+                      onChange={(e) => { setNewSlideImageUrl(e.target.value); setNewSlideFile(null); setNewSlidePreview(''); }}
+                      placeholder="https://example.com/banner.png"
+                      className="bg-card/50"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Navigation URL (where it links)</label>
+                  <Input
+                    value={newSlideNavUrl}
+                    onChange={(e) => setNewSlideNavUrl(e.target.value)}
+                    placeholder="/upcoming-event or https://..."
+                    className="bg-card/50"
+                  />
+                </div>
+                {newSlidePreview && (
+                  <img src={newSlidePreview} alt="Preview" className="w-full max-h-40 object-cover rounded-xl border border-border/50" />
+                )}
+                <Button onClick={handleAddSlide} disabled={isAddingSlide} className="gap-2">
+                  {isAddingSlide ? <><Loader2 className="h-4 w-4 animate-spin" /> Uploading...</> : <><Plus className="h-4 w-4" /> Add Slide</>}
+                </Button>
+              </Card>
+
+              {/* Current slides */}
+              {isAdSlidesLoading ? (
+                <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+              ) : adSlides.length === 0 ? (
+                <Card className="p-12 text-center bg-card/30 border-dashed border-2">
+                  <Image className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-muted-foreground">No slides yet. Add your first banner above.</p>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">{adSlides.length} slide{adSlides.length !== 1 ? 's' : ''} — auto-rotates every 4 seconds on homepage</p>
+                  {adSlides.map((slide, index) => (
+                    <Card key={slide.id} className="p-4 bg-card/60 border-border/50">
+                      <div className="flex gap-4 items-start">
+                        <div className="shrink-0 w-32 h-20 rounded-lg overflow-hidden bg-muted border border-border/50">
+                          <img src={slide.imageUrl} alt={`Slide ${index + 1}`} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 space-y-2 min-w-0">
+                          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Slide {index + 1}</p>
+                          <div className="flex gap-2">
+                            <Input
+                              value={editNavUrls[slide.id] ?? slide.navigationUrl}
+                              onChange={(e) => setEditNavUrls((prev) => ({ ...prev, [slide.id]: e.target.value }))}
+                              placeholder="Navigation URL"
+                              className="bg-card/50 text-sm h-8"
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 px-3 shrink-0"
+                              onClick={() => handleUpdateSlideNav(slide.id)}
+                            >
+                              <Save className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">{slide.imageUrl}</p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDeleteSlide(slide.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Ticket Scanner */}
+          {activeTab === 'ticket-scanner' && (
+            <motion.div
+              key="ticket-scanner"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+            >
+              <TicketScanner />
+            </motion.div>
+          )}
+
+          {/* Bulk QR Tickets */}
+          {activeTab === 'bulk-qr' && (
+            <motion.div
+              key="bulk-qr"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-2xl font-bold">Bulk QR Ticket Generator</h2>
+                <p className="text-muted-foreground text-sm mt-1">Generate and download multiple event tickets with unique QR codes in one click.</p>
+              </div>
+
+              <Card className="p-6 bg-card/60 border-border/50">
+                <div className="flex flex-col sm:flex-row gap-4 items-end">
+                  <div className="flex-1 space-y-1.5">
+                    <label className="text-sm font-semibold">Number of Tickets</label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={500}
+                      value={bulkQrCount}
+                      onChange={(e) => setBulkQrCount(e.target.value)}
+                      placeholder="e.g. 50"
+                      className="bg-card/50 text-lg h-11"
+                    />
+                    <p className="text-xs text-muted-foreground">Max 500 tickets per batch</p>
+                  </div>
+                  <Button
+                    onClick={handleBulkGenerate}
+                    disabled={isBulkGenerating || !bulkQrCount || parseInt(bulkQrCount) < 1 || parseInt(bulkQrCount) > 500}
+                    className="h-11 px-8 gap-2"
+                  >
+                    {isBulkGenerating ? (
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</>
+                    ) : (
+                      <><QrCode className="h-4 w-4" /> Generate</>
+                    )}
+                  </Button>
+                  {bulkQrTickets.length > 0 && (
+                    <Button
+                      onClick={handleBulkDownload}
+                      disabled={isBulkDownloading}
+                      variant="outline"
+                      className="h-11 px-8 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                    >
+                      {isBulkDownloading ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" /> Zipping...</>
+                      ) : (
+                        <><Download className="h-4 w-4" /> Download All ({bulkQrTickets.length})</>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </Card>
+
+              {bulkQrTickets.length > 0 && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-4">{bulkQrTickets.length} tickets generated — click "Download All" to get a ZIP of all ticket images.</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                    {bulkQrTickets.map((ticket) => (
+                      <Card key={ticket.token} className="p-3 bg-card/60 border-border/50 flex flex-col items-center gap-2 text-center">
+                        <img src={ticket.qrUrl} alt={ticket.token} className="w-20 h-20" />
+                        <span className="text-xs font-mono font-bold text-primary tracking-widest">{ticket.token}</span>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {bulkQrTickets.length === 0 && !isBulkGenerating && (
+                <Card className="p-16 text-center bg-card/30 border-dashed border-2">
+                  <QrCode className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+                  <p className="text-muted-foreground">Enter the number of tickets and click Generate.</p>
+                </Card>
+              )}
             </motion.div>
           )}
         </div>

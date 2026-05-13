@@ -3,11 +3,13 @@ import { Link } from "react-router-dom";
 import BookingForm from "@/components/BookingForm";
 import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import { useState, useEffect } from "react";
-import { getBanner } from "@/api/siteConfig";
+import { getBanner, getEventContent } from "@/api/siteConfig";
 
 const UpcomingEvent = () => {
   useSmoothScroll();
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
+  const [eventTitle, setEventTitle] = useState("{eventTitle}");
+  const [eventDescription, setEventDescription] = useState("{eventDescription}");
 
   useEffect(() => {
     const loadBanner = async () => {
@@ -18,6 +20,13 @@ const UpcomingEvent = () => {
         }
       } catch (error) {
         console.error("Failed to load banner", error);
+      }
+      try {
+        const ec = await getEventContent();
+        setEventTitle(ec.title);
+        setEventDescription(ec.description);
+      } catch (error) {
+        console.error("Failed to load event content", error);
       }
     };
     loadBanner();
@@ -54,10 +63,10 @@ const UpcomingEvent = () => {
               className="mx-auto mb-8 max-w-2xl w-full h-auto rounded-xl shadow-2xl border border-border/50"
             />
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Secure Your Entry
+              {eventTitle}
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Join us for an exclusive session designed to transform your business mindset.
+              {eventDescription}
             </p>
           </motion.div>
 

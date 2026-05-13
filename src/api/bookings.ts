@@ -19,6 +19,8 @@ export interface Booking {
   paymentMode: string;
   isPaid: boolean;
   screenshotUrl: string | null;
+  scannedAt?: string | null;
+  scannedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -65,5 +67,23 @@ export const deleteAllBookings = async (): Promise<{ message: string }> => {
 
 export const deleteBookingsByPackage = async (packageType: string): Promise<{ message: string }> => {
   const { data } = await api.delete(`/bookings/by-package/${packageType}`);
+  return data;
+};
+
+export interface ScanResult {
+  message: string;
+  booking?: {
+    name: string;
+    number?: string;
+    package: string;
+    token: string;
+    paymentMode?: string;
+    isPaid?: boolean;
+  };
+  scannedAt?: string;
+}
+
+export const scanTicket = async (token: string): Promise<ScanResult> => {
+  const { data } = await api.post('/bookings/scan', { token });
   return data;
 };
