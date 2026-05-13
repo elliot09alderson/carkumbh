@@ -55,6 +55,8 @@ import {
   addAdSlide,
   deleteAdSlide,
   updateAdSlide,
+  getEventContent,
+  updateEventContent,
   WorkshopContent,
   EventPackage,
   AdSlide,
@@ -117,6 +119,11 @@ const Admin = () => {
   const [eventPackages, setEventPackages] = useState<EventPackage[]>([]);
   const [isSavingContent, setIsSavingContent] = useState(false);
   const [isSavingPackages, setIsSavingPackages] = useState(false);
+
+  // Event page content state
+  const [eventPageTitle, setEventPageTitle] = useState('Upcoming Event');
+  const [eventPageDescription, setEventPageDescription] = useState('');
+  const [isSavingEventContent, setIsSavingEventContent] = useState(false);
   
   const { isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const navigate = useNavigate();
@@ -136,6 +143,7 @@ const Admin = () => {
     loadWorkshopContent();
     loadEventPackages();
     loadAdSlides();
+    loadEventPageContent();
   }, [isAuthenticated, authLoading, navigate]);
 
   const loadEventPackages = async () => {
@@ -578,6 +586,30 @@ const Admin = () => {
     return allPrices.sort((a, b) => parseInt(a) - parseInt(b));
   }, [eventPackages, bookings]);
 
+
+  const loadEventPageContent = async () => {
+    try {
+      const data = await getEventContent();
+      setEventPageTitle(data.title || '');
+      setEventPageDescription(data.description || '');
+    } catch (e) {
+      console.error('Failed to load event content', e);
+    }
+  };
+
+  const handleSaveEventPageContent = async () => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) return;
+    setIsSavingEventContent(true);
+    try {
+      await updateEventContent({ title: eventPageTitle, description: eventPageDescription, razorpayName: 'Toran Sir' }, token);
+      toast({ title: 'Saved', description: 'Event page content updated' });
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.response?.data?.message || 'Failed to save', variant: 'destructive' });
+    } finally {
+      setIsSavingEventContent(false);
+    }
+  };
 
   const loadAdSlides = async () => {
     setIsAdSlidesLoading(true);
@@ -1037,6 +1069,41 @@ const Admin = () => {
                       <img src={currentBanner} alt="Banner" className="w-full h-40 object-cover rounded-xl border border-border" />
                     </div>
                   )}
+                </div>
+              </Card>
+
+              {/* Event Page Content */}
+              <Card className="p-8 bg-card/50 backdrop-blur-sm">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-primary/10 rounded-lg"><Settings className="h-6 w-6 text-primary" /></div>
+                  <div>
+                    <h3 className="text-xl font-bold">Event Page Content</h3>
+                    <p className="text-sm text-muted-foreground">Edit the title and description shown on the booking page</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-semibold">Page Title</label>
+                    <Input
+                      value={eventPageTitle}
+                      onChange={(e) => setEventPageTitle(e.target.value)}
+                      placeholder="e.g. Secure Your Entry"
+                      className="bg-card/50"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-semibold">Description</label>
+                    <Textarea
+                      value={eventPageDescription}
+                      onChange={(e) => setEventPageDescription(e.target.value)}
+                      placeholder="e.g. Join us for an exclusive session..."
+                      rows={3}
+                      className="bg-card/50 resize-none"
+                    />
+                  </div>
+                  <Button onClick={handleSaveEventPageContent} disabled={isSavingEventContent} className="gap-2">
+                    {isSavingEventContent ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : <><Save className="h-4 w-4" /> Save Content</>}
+                  </Button>
                 </div>
               </Card>
 
