@@ -87,3 +87,12 @@ export const scanTicket = async (token: string): Promise<ScanResult> => {
   const { data } = await api.post('/bookings/scan', { token });
   return data;
 };
+
+export const bulkCreateBookings = async (
+  count: number,
+  label?: string,
+  packageName?: string
+): Promise<{ tokens: string[]; count: number }> => {
+  const { data } = await api.post('/bookings/bulk', { count, label, packageName });
+  return data;
+};

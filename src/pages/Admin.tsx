@@ -40,7 +40,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAllBookings, togglePaidStatus as apiTogglePaidStatus, Booking, deleteAllBookings as apiDeleteAllBookings, deleteBookingsByPackage as apiDeleteBookingsByPackage, deleteBooking as apiDeleteBooking } from '@/api/bookings';
+import { getAllBookings, togglePaidStatus as apiTogglePaidStatus, Booking, deleteAllBookings as apiDeleteAllBookings, deleteBookingsByPackage as apiDeleteBookingsByPackage, deleteBooking as apiDeleteBooking, bulkCreateBookings } from '@/api/bookings';
 import { getAllStudents, Student } from '@/api/students';
 import {
   getBanner,
@@ -641,11 +641,6 @@ const Admin = () => {
     }
   };
 
-  const generateToken = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  };
-
   const drawTicketCanvas = (token: string, qrDataUrl: string): Promise<string> => {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
@@ -722,19 +717,25 @@ const Admin = () => {
     if (!count || count < 1 || count > 500) return;
     setIsBulkGenerating(true);
     setBulkQrTickets([]);
-    const tickets: { token: string; qrUrl: string }[] = [];
-    for (let i = 0; i < count; i++) {
-      const token = generateToken();
-      const qrUrl = await QRCode.toDataURL(token, {
-        width: 300,
-        margin: 2,
-        color: { dark: '#000000', light: '#ffffff' },
-        errorCorrectionLevel: 'H',
-      });
-      tickets.push({ token, qrUrl });
+    try {
+      const { tokens } = await bulkCreateBookings(count, 'Bulk Ticket', 'General');
+      const tickets: { token: string; qrUrl: string }[] = [];
+      for (const token of tokens) {
+        const qrUrl = await QRCode.toDataURL(token, {
+          width: 300,
+          margin: 2,
+          color: { dark: '#000000', light: '#ffffff' },
+          errorCorrectionLevel: 'H',
+        });
+        tickets.push({ token, qrUrl });
+      }
+      setBulkQrTickets(tickets);
+      toast({ title: 'Success', description: `${tokens.length} tickets created and saved to database` });
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.response?.data?.message || 'Failed to generate tickets', variant: 'destructive' });
+    } finally {
+      setIsBulkGenerating(false);
     }
-    setBulkQrTickets(tickets);
-    setIsBulkGenerating(false);
   };
 
   const handleBulkDownload = async () => {
