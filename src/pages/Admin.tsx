@@ -40,7 +40,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAllBookings, togglePaidStatus as apiTogglePaidStatus, Booking, deleteAllBookings as apiDeleteAllBookings, deleteBookingsByPackage as apiDeleteBookingsByPackage, deleteBooking as apiDeleteBooking, bulkCreateBookings } from '@/api/bookings';
+import { getAllBookings, togglePaidStatus as apiTogglePaidStatus, Booking, deleteAllBookings as apiDeleteAllBookings, deleteBookingsByPackage as apiDeleteBookingsByPackage, deleteBooking as apiDeleteBooking, bulkCreateBookings, getBulkBookings, deleteBulkBookings } from '@/api/bookings';
 import { getAllStudents, Student } from '@/api/students';
 import {
   getBanner,
@@ -73,9 +73,12 @@ const Admin = () => {
 
   // Bulk QR state
   const [bulkQrCount, setBulkQrCount] = useState<string>('10');
-  const [bulkQrTickets, setBulkQrTickets] = useState<{ token: string; qrUrl: string }[]>([]);
+  const [bulkQrTickets, setBulkQrTickets] = useState<{ id: string; token: string; qrUrl: string }[]>([]);
   const [isBulkGenerating, setIsBulkGenerating] = useState(false);
   const [isBulkDownloading, setIsBulkDownloading] = useState(false);
+  const [isBulkLoading, setIsBulkLoading] = useState(false);
+  const [selectedBulkIds, setSelectedBulkIds] = useState<Set<string>>(new Set());
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
 
   // Ad Banners state
   const [adSlides, setAdSlides] = useState<AdSlide[]>([]);
@@ -144,6 +147,7 @@ const Admin = () => {
     loadEventPackages();
     loadAdSlides();
     loadEventPageContent();
+    loadBulkTickets();
   }, [isAuthenticated, authLoading, navigate]);
 
   const loadEventPackages = async () => {
@@ -744,29 +748,85 @@ const Admin = () => {
     });
   };
 
+  const loadBulkTickets = async () => {
+    setIsBulkLoading(true);
+    try {
+      const bookings = await getBulkBookings();
+      const tickets = await Promise.all(
+        bookings.map(async (b) => {
+          const qrUrl = await QRCode.toDataURL(b.token, {
+            width: 200, margin: 2,
+            color: { dark: '#000000', light: '#ffffff' },
+            errorCorrectionLevel: 'H',
+          });
+          return { id: b._id, token: b.token, qrUrl };
+        })
+      );
+      setBulkQrTickets(tickets);
+    } catch (e) {
+      console.error('Failed to load bulk tickets', e);
+    } finally {
+      setIsBulkLoading(false);
+    }
+  };
+
   const handleBulkGenerate = async () => {
     const count = parseInt(bulkQrCount);
     if (!count || count < 1 || count > 500) return;
     setIsBulkGenerating(true);
-    setBulkQrTickets([]);
     try {
       const { tokens } = await bulkCreateBookings(count, 'Bulk Ticket', 'General');
-      const tickets: { token: string; qrUrl: string }[] = [];
-      for (const token of tokens) {
-        const qrUrl = await QRCode.toDataURL(token, {
-          width: 300,
-          margin: 2,
-          color: { dark: '#000000', light: '#ffffff' },
-          errorCorrectionLevel: 'H',
-        });
-        tickets.push({ token, qrUrl });
-      }
-      setBulkQrTickets(tickets);
-      toast({ title: 'Success', description: `${tokens.length} tickets created and saved to database` });
+      toast({ title: 'Success', description: `${tokens.length} tickets created` });
+      await loadBulkTickets();
     } catch (e: any) {
       toast({ title: 'Error', description: e.response?.data?.message || 'Failed to generate tickets', variant: 'destructive' });
     } finally {
       setIsBulkGenerating(false);
+    }
+  };
+
+  const toggleSelectBulk = (id: string) => {
+    setSelectedBulkIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedBulkIds.size === bulkQrTickets.length) {
+      setSelectedBulkIds(new Set());
+    } else {
+      setSelectedBulkIds(new Set(bulkQrTickets.map((t) => t.id)));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedBulkIds.size === 0) return;
+    setIsDeletingBulk(true);
+    try {
+      await deleteBulkBookings(Array.from(selectedBulkIds));
+      toast({ title: 'Deleted', description: `${selectedBulkIds.size} ticket(s) deleted` });
+      setSelectedBulkIds(new Set());
+      await loadBulkTickets();
+    } catch (e: any) {
+      toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' });
+    } finally {
+      setIsDeletingBulk(false);
+    }
+  };
+
+  const handleDeleteAllBulk = async () => {
+    setIsDeletingBulk(true);
+    try {
+      const result = await deleteBulkBookings();
+      toast({ title: 'Deleted', description: result.message });
+      setBulkQrTickets([]);
+      setSelectedBulkIds(new Set());
+    } catch (e: any) {
+      toast({ title: 'Error', description: 'Failed to delete all', variant: 'destructive' });
+    } finally {
+      setIsDeletingBulk(false);
     }
   };
 
@@ -1640,12 +1700,13 @@ const Admin = () => {
             >
               <div>
                 <h2 className="text-2xl font-bold">Bulk QR Ticket Generator</h2>
-                <p className="text-muted-foreground text-sm mt-1">Generate and download multiple event tickets with unique QR codes in one click.</p>
+                <p className="text-muted-foreground text-sm mt-1">Generate and download multiple event tickets. All tickets are saved to the database and scannable.</p>
               </div>
 
+              {/* Generate + Download controls */}
               <Card className="p-6 bg-card/60 border-border/50">
-                <div className="flex flex-col sm:flex-row gap-4 items-end">
-                  <div className="flex-1 space-y-1.5">
+                <div className="flex flex-col sm:flex-row gap-4 items-end flex-wrap">
+                  <div className="flex-1 min-w-[180px] space-y-1.5">
                     <label className="text-sm font-semibold">Number of Tickets</label>
                     <Input
                       type="number"
@@ -1656,54 +1717,80 @@ const Admin = () => {
                       placeholder="e.g. 50"
                       className="bg-card/50 text-lg h-11"
                     />
-                    <p className="text-xs text-muted-foreground">Max 500 tickets per batch</p>
+                    <p className="text-xs text-muted-foreground">Max 500 per batch</p>
                   </div>
                   <Button
                     onClick={handleBulkGenerate}
                     disabled={isBulkGenerating || !bulkQrCount || parseInt(bulkQrCount) < 1 || parseInt(bulkQrCount) > 500}
                     className="h-11 px-8 gap-2"
                   >
-                    {isBulkGenerating ? (
-                      <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</>
-                    ) : (
-                      <><QrCode className="h-4 w-4" /> Generate</>
-                    )}
+                    {isBulkGenerating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : <><QrCode className="h-4 w-4" /> Generate</>}
                   </Button>
                   {bulkQrTickets.length > 0 && (
-                    <Button
-                      onClick={handleBulkDownload}
-                      disabled={isBulkDownloading}
-                      variant="outline"
-                      className="h-11 px-8 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                    >
-                      {isBulkDownloading ? (
-                        <><Loader2 className="h-4 w-4 animate-spin" /> Zipping...</>
-                      ) : (
-                        <><Download className="h-4 w-4" /> Download All ({bulkQrTickets.length})</>
-                      )}
+                    <Button onClick={handleBulkDownload} disabled={isBulkDownloading} variant="outline" className="h-11 px-6 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+                      {isBulkDownloading ? <><Loader2 className="h-4 w-4 animate-spin" /> Zipping...</> : <><Download className="h-4 w-4" /> Download All ({bulkQrTickets.length})</>}
                     </Button>
                   )}
                 </div>
               </Card>
 
-              {bulkQrTickets.length > 0 && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-4">{bulkQrTickets.length} tickets generated — click "Download All" to get a ZIP of all ticket images.</p>
+              {/* Tickets list with select + delete */}
+              {isBulkLoading ? (
+                <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+              ) : bulkQrTickets.length > 0 ? (
+                <div className="space-y-4">
+                  {/* Toolbar */}
+                  <div className="flex flex-wrap items-center gap-3 justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-muted-foreground font-medium">{bulkQrTickets.length} ticket{bulkQrTickets.length !== 1 ? 's' : ''} in database</span>
+                      <Button size="sm" variant="ghost" onClick={toggleSelectAll} className="h-8 text-xs gap-1.5">
+                        {selectedBulkIds.size === bulkQrTickets.length ? <><X className="h-3 w-3" /> Deselect All</> : <><CheckCircle2 className="h-3 w-3" /> Select All</>}
+                      </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      {selectedBulkIds.size > 0 && (
+                        <Button size="sm" variant="destructive" onClick={handleDeleteSelected} disabled={isDeletingBulk} className="h-8 gap-1.5">
+                          {isDeletingBulk ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                          Delete Selected ({selectedBulkIds.size})
+                        </Button>
+                      )}
+                      <Button size="sm" variant="outline" onClick={handleDeleteAllBulk} disabled={isDeletingBulk} className="h-8 gap-1.5 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground">
+                        {isDeletingBulk ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                        Delete All
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                    {bulkQrTickets.map((ticket) => (
-                      <Card key={ticket.token} className="p-3 bg-card/60 border-border/50 flex flex-col items-center gap-2 text-center">
-                        <img src={ticket.qrUrl} alt={ticket.token} className="w-20 h-20" />
-                        <span className="text-xs font-mono font-bold text-primary tracking-widest">{ticket.token}</span>
-                      </Card>
-                    ))}
+                    {bulkQrTickets.map((ticket) => {
+                      const isSelected = selectedBulkIds.has(ticket.id);
+                      return (
+                        <Card
+                          key={ticket.id}
+                          onClick={() => toggleSelectBulk(ticket.id)}
+                          className={`p-3 cursor-pointer flex flex-col items-center gap-2 text-center transition-all border-2 ${
+                            isSelected ? 'border-primary bg-primary/10' : 'border-border/50 bg-card/60 hover:border-primary/40'
+                          }`}
+                        >
+                          <div className="relative w-full flex justify-center">
+                            <img src={ticket.qrUrl} alt={ticket.token} className="w-20 h-20" />
+                            {isSelected && (
+                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                                <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-xs font-mono font-bold text-primary tracking-widest">{ticket.token}</span>
+                        </Card>
+                      );
+                    })}
                   </div>
                 </div>
-              )}
-
-              {bulkQrTickets.length === 0 && !isBulkGenerating && (
+              ) : (
                 <Card className="p-16 text-center bg-card/30 border-dashed border-2">
                   <QrCode className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-                  <p className="text-muted-foreground">Enter the number of tickets and click Generate.</p>
+                  <p className="text-muted-foreground">No bulk tickets yet. Enter a number above and click Generate.</p>
                 </Card>
               )}
             </motion.div>

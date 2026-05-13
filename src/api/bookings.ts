@@ -96,3 +96,13 @@ export const bulkCreateBookings = async (
   const { data } = await api.post('/bookings/bulk', { count, label, packageName });
   return data;
 };
+
+export const getBulkBookings = async (): Promise<Booking[]> => {
+  const { data } = await api.get('/bookings/bulk');
+  return data;
+};
+
+export const deleteBulkBookings = async (ids?: string[]): Promise<{ message: string }> => {
+  const { data } = await api.delete('/bookings/bulk', { data: ids ? { ids } : undefined });
+  return data;
+};
