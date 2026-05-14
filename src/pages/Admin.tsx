@@ -74,7 +74,7 @@ const Admin = () => {
 
   // Bulk QR state
   const [bulkQrCount, setBulkQrCount] = useState<string>('10');
-  const [bulkQrTickets, setBulkQrTickets] = useState<{ id: string; token: string; qrUrl: string }[]>([]);
+  const [bulkQrTickets, setBulkQrTickets] = useState<{ id: string; token: string; package: string; qrUrl: string }[]>([]);
   const [isBulkGenerating, setIsBulkGenerating] = useState(false);
   const [isBulkDownloading, setIsBulkDownloading] = useState(false);
   const [isBulkLoading, setIsBulkLoading] = useState(false);
@@ -678,7 +678,7 @@ const Admin = () => {
     }
   };
 
-  const drawTicketCanvas = (token: string, qrDataUrl: string): Promise<string> => {
+  const drawTicketCanvas = (token: string, qrDataUrl: string, packageName: string = ''): Promise<string> => {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d')!;
@@ -689,26 +689,43 @@ const Admin = () => {
       ctx.fillStyle = '#0f0f0f';
       ctx.fillRect(0, 0, W, H);
 
-      const grad = ctx.createLinearGradient(0, 0, W, 140);
+      const grad = ctx.createLinearGradient(0, 0, W, 160);
       grad.addColorStop(0, '#f97316');
       grad.addColorStop(1, '#ea580c');
       ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, W, 140);
+      ctx.fillRect(0, 0, W, 160);
 
       ctx.fillStyle = 'rgba(255,255,255,0.9)';
       ctx.font = 'bold 22px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('EVENT TICKET', W / 2, 65);
-      ctx.font = '14px Arial';
+      ctx.fillText('EVENT TICKET', W / 2, 52);
+      ctx.font = '13px Arial';
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.fillText('toransir.com', W / 2, 95);
+      ctx.fillText('toransir.com', W / 2, 76);
+
+      if (packageName) {
+        const label = packageName.toUpperCase();
+        ctx.font = 'bold 13px Arial';
+        const tw = ctx.measureText(label).width;
+        const bw = tw + 28, bh = 26, bx = W / 2 - bw / 2, by = 96;
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        (ctx as any).roundRect(bx, by, bw, bh, 6);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([]);
+        (ctx as any).roundRect(bx, by, bw, bh, 6);
+        ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(label, W / 2, by + 17);
+      }
 
       ctx.strokeStyle = '#f97316';
       ctx.lineWidth = 2;
       ctx.setLineDash([8, 6]);
       ctx.beginPath();
-      ctx.moveTo(30, 160);
-      ctx.lineTo(W - 30, 160);
+      ctx.moveTo(30, 178);
+      ctx.lineTo(W - 30, 178);
       ctx.stroke();
       ctx.setLineDash([]);
 
@@ -760,7 +777,7 @@ const Admin = () => {
             color: { dark: '#000000', light: '#ffffff' },
             errorCorrectionLevel: 'H',
           });
-          return { id: b._id, token: b.token, qrUrl };
+          return { id: b._id, token: b.token, package: b.package, qrUrl };
         })
       );
       setBulkQrTickets(tickets);
@@ -836,7 +853,7 @@ const Admin = () => {
     setIsBulkDownloading(true);
     const zip = new JSZip();
     for (const ticket of bulkQrTickets) {
-      const dataUrl = await drawTicketCanvas(ticket.token, ticket.qrUrl);
+      const dataUrl = await drawTicketCanvas(ticket.token, ticket.qrUrl, ticket.package);
       const base64 = dataUrl.split(',')[1];
       zip.file(`ticket-${ticket.token}.png`, base64, { base64: true });
     }
