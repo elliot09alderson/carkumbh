@@ -33,6 +33,7 @@ const BookingForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  const [ticketFile, setTicketFile] = useState<File | null>(null);
   const [razorpayName, setRazorpayName] = useState<string>("Toran Sir");
   const { toast } = useToast();
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -72,6 +73,50 @@ const BookingForm = () => {
     }
   }, [token]);
 
+  // Pre-render ticket to a File so iOS can share() synchronously on button tap
+  useEffect(() => {
+    if (!qrDataUrl || !token) return;
+    setTicketFile(null);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const W = 600, H = 820;
+    canvas.width = W; canvas.height = H;
+    ctx.fillStyle = "#0f0f0f"; ctx.fillRect(0, 0, W, H);
+    const grad = ctx.createLinearGradient(0, 0, W, 140);
+    grad.addColorStop(0, "#f97316"); grad.addColorStop(1, "#ea580c");
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, 140);
+    ctx.fillStyle = "rgba(255,255,255,0.9)"; ctx.font = "bold 22px Arial"; ctx.textAlign = "center";
+    ctx.fillText("EVENT TICKET", W / 2, 65);
+    ctx.font = "14px Arial"; ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.fillText("toransir.com", W / 2, 95);
+    ctx.strokeStyle = "#f97316"; ctx.lineWidth = 2; ctx.setLineDash([8, 6]);
+    ctx.beginPath(); ctx.moveTo(30, 160); ctx.lineTo(W - 30, 160); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#f97316"; ctx.font = "bold 14px Arial"; ctx.textAlign = "center";
+    ctx.fillText("TOKEN", W / 2, 195);
+    ctx.fillStyle = "#ffffff"; ctx.font = "bold 52px monospace"; ctx.fillText(token, W / 2, 250);
+    ctx.fillStyle = "#9ca3af"; ctx.font = "13px Arial";
+    ctx.fillText("NAME", W / 2 - 110, 295); ctx.fillText("PACKAGE", W / 2 + 110, 295);
+    ctx.fillStyle = "#ffffff"; ctx.font = "bold 18px Arial";
+    ctx.fillText(formData.name, W / 2 - 110, 320); ctx.fillText(`₹${formData.package}`, W / 2 + 110, 320);
+    const qrImg = new Image();
+    qrImg.onload = () => {
+      ctx.fillStyle = "#ffffff"; ctx.beginPath();
+      ctx.roundRect(W / 2 - 130, 345, 260, 260, 16); ctx.fill();
+      ctx.drawImage(qrImg, W / 2 - 120, 355, 240, 240);
+      ctx.fillStyle = "#9ca3af"; ctx.font = "13px Arial"; ctx.textAlign = "center";
+      ctx.fillText("Scan this QR code at the event entrance", W / 2, 630);
+      ctx.fillStyle = "#1f1f1f"; ctx.fillRect(0, H - 80, W, 80);
+      ctx.fillStyle = "#6b7280"; ctx.font = "12px Arial";
+      ctx.fillText("This ticket is non-transferable. Valid for one-time entry only.", W / 2, H - 45);
+      ctx.fillText(`Booked on ${new Date().toLocaleDateString("en-IN")}`, W / 2, H - 22);
+      canvas.toBlob((blob) => {
+        if (blob) setTicketFile(new File([blob], `ticket-${token}.png`, { type: "image/png" }));
+      }, "image/png");
+    };
+    qrImg.src = qrDataUrl;
+  }, [qrDataUrl, token]);
+
   const generateQR = async (tokenValue: string) => {
     try {
       const dataUrl = await QRCode.toDataURL(tokenValue, {
@@ -86,121 +131,31 @@ const BookingForm = () => {
     }
   };
 
-  const downloadTicket = async () => {
-    if (!qrDataUrl) return;
-
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const W = 600;
-    const H = 820;
-    canvas.width = W;
-    canvas.height = H;
-
-    // Background
-    ctx.fillStyle = "#0f0f0f";
-    ctx.fillRect(0, 0, W, H);
-
-    // Orange gradient header
-    const grad = ctx.createLinearGradient(0, 0, W, 140);
-    grad.addColorStop(0, "#f97316");
-    grad.addColorStop(1, "#ea580c");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, 140);
-
-    // Title
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.font = "bold 22px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("EVENT TICKET", W / 2, 65);
-    ctx.font = "14px Arial";
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
-    ctx.fillText("toransir.com", W / 2, 95);
-
-    // Divider
-    ctx.strokeStyle = "#f97316";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([8, 6]);
-    ctx.beginPath();
-    ctx.moveTo(30, 160);
-    ctx.lineTo(W - 30, 160);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Token
-    ctx.fillStyle = "#f97316";
-    ctx.font = "bold 14px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("TOKEN", W / 2, 195);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 52px monospace";
-    ctx.fillText(token, W / 2, 250);
-
-    // Name & Package
-    ctx.fillStyle = "#9ca3af";
-    ctx.font = "13px Arial";
-    ctx.fillText("NAME", W / 2 - 110, 295);
-    ctx.fillText("PACKAGE", W / 2 + 110, 295);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 18px Arial";
-    ctx.fillText(formData.name, W / 2 - 110, 320);
-    ctx.fillText(`₹${formData.package}`, W / 2 + 110, 320);
-
-    // QR Code — wait for image load before proceeding
-    await new Promise<void>((resolve) => {
-      const qrImg = new Image();
-      qrImg.onload = () => {
-        // QR background
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.roundRect(W / 2 - 130, 345, 260, 260, 16);
-        ctx.fill();
-        ctx.drawImage(qrImg, W / 2 - 120, 355, 240, 240);
-
-        ctx.fillStyle = "#9ca3af";
-        ctx.font = "13px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText("Scan this QR code at the event entrance", W / 2, 630);
-
-        // Footer
-        ctx.fillStyle = "#1f1f1f";
-        ctx.fillRect(0, H - 80, W, 80);
-        ctx.fillStyle = "#6b7280";
-        ctx.font = "12px Arial";
-        ctx.fillText("This ticket is non-transferable. Valid for one-time entry only.", W / 2, H - 45);
-        ctx.fillText(`Booked on ${new Date().toLocaleDateString("en-IN")}`, W / 2, H - 22);
-
-        resolve();
-      };
-      qrImg.src = qrDataUrl;
-    });
-
-    // On mobile use Web Share API (iOS/Android native share sheet → "Save Image")
+  const downloadTicket = () => {
+    // On iOS, navigator.share() MUST be called synchronously from the tap handler —
+    // any await before it breaks the user-gesture chain and iOS rejects it silently.
+    // ticketFile is pre-rendered by a useEffect so we can share instantly here.
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile && navigator.share) {
-      try {
-        const blob = await new Promise<Blob>((resolve, reject) =>
-          canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob failed"))), "image/png")
-        );
-        const file = new File([blob], `ticket-${token}.png`, { type: "image/png" });
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], title: `Event Ticket — ${token}` });
-          return;
-        }
-      } catch (err) {
-        if ((err as Error).name === "AbortError") return; // user cancelled share sheet
-        // share failed — fall through to opening in new tab
-        window.open(canvas.toDataURL("image/png"), "_blank");
+    if (isMobile && navigator.share && ticketFile) {
+      if (navigator.canShare?.({ files: [ticketFile] })) {
+        navigator.share({ files: [ticketFile], title: `Event Ticket — ${token}` }).catch((err) => {
+          if ((err as Error).name !== "AbortError") {
+            // canShare said yes but share failed — open image in new tab as last resort
+            window.open(URL.createObjectURL(ticketFile), "_blank");
+          }
+        });
         return;
       }
     }
 
-    // Desktop fallback
+    // Desktop (or mobile browser without share support): anchor download
+    if (!ticketFile) return;
+    const url = URL.createObjectURL(ticketFile);
     const link = document.createElement("a");
     link.download = `ticket-${token}.png`;
-    link.href = canvas.toDataURL("image/png");
+    link.href = url;
     link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
   const baseAmount = parseInt(formData.package);
@@ -375,9 +330,9 @@ const BookingForm = () => {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
-              <Button onClick={downloadTicket} className="flex-1 bg-primary hover:bg-primary/90" disabled={!qrDataUrl}>
+              <Button onClick={downloadTicket} className="flex-1 bg-primary hover:bg-primary/90" disabled={!ticketFile}>
                 <Download className="mr-2 h-4 w-4" />
-                Download Ticket
+                {ticketFile ? "Download Ticket" : "Preparing…"}
               </Button>
               {(() => {
                 const selectedPkg = packages.find(p => p.price === formData.package);
