@@ -329,7 +329,7 @@ const BookingForm = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            <div className="flex flex-col sm:flex-row gap-3 mb-2">
               <Button onClick={downloadTicket} className="flex-1 bg-primary hover:bg-primary/90" disabled={!ticketFile}>
                 <Download className="mr-2 h-4 w-4" />
                 {ticketFile ? "Download Ticket" : "Preparing…"}
@@ -351,6 +351,11 @@ const BookingForm = () => {
                 return null;
               })()}
             </div>
+
+            {/* Screenshot fallback hint */}
+            <p className="text-xs text-center text-muted-foreground mb-3 px-2">
+              📸 If the ticket doesn't download, take a <span className="font-semibold text-foreground/70">screenshot</span> of this page to save your ticket.
+            </p>
 
             <Button
               variant="ghost"
