@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 96" role="img" aria-label="Toran Sir">
+  <defs>
+    <linearGradient id="logo-gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F5CC42"/>
+      <stop offset="55%" stop-color="#E9B308"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <linearGradient id="logo-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#171C28"/>
+      <stop offset="100%" stop-color="#0B0E15"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Mark: rounded tile with TS monogram -->
+  <g>
+    <rect x="4" y="8" width="80" height="80" rx="18" fill="url(#logo-bg)"/>
+    <rect x="7" y="11" width="74" height="74" rx="15"
+          fill="none" stroke="url(#logo-gold)" stroke-width="1.8" opacity="0.9"/>
+    <text x="44" y="58"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          font-family="'Playfair Display', Georgia, 'Times New Roman', serif"
+          font-size="46"
+          font-weight="700"
+          letter-spacing="-1"
+          fill="url(#logo-gold)">TS</text>
+  </g>
+
+  <!-- Wordmark -->
+  <g font-family="'Playfair Display', Georgia, 'Times New Roman', serif" fill="url(#logo-gold)">
+    <text x="100" y="52" font-size="32" font-weight="700" letter-spacing="0.5">Toran Sir</text>
+  </g>
+  <g font-family="'Inter', 'Poppins', system-ui, sans-serif" fill="#E6E8EE" opacity="0.75">
+    <text x="101" y="74" font-size="12" font-weight="500" letter-spacing="3">BUSINESS COACH · TRAINER</text>
+  </g>
+</svg>

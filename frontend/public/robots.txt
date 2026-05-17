@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin-login
+
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /admin-login
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /admin-login
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+Sitemap: https://toransir.com/sitemap.xml
