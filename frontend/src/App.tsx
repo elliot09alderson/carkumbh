@@ -15,6 +15,7 @@ import UpcomingEvent from "./pages/UpcomingEvent";
 import CertificationRegistration from "./pages/CertificationRegistration";
 import OurTeam from "./pages/OurTeam";
 import ToranSirSchool from "./pages/ToranSirSchool";
+import InAppBrowserBanner from "@/components/InAppBrowserBanner";
 
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
+        <InAppBrowserBanner />
         <Toaster />
         <Sonner />
         <BrowserRouter>
