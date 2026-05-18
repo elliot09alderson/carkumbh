@@ -18,8 +18,6 @@ declare global {
   }
 }
 
-const calculateGST = (baseAmount: number): number => Math.round(baseAmount * 0.18);
-
 const BookingForm = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -158,9 +156,7 @@ const BookingForm = () => {
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
-  const baseAmount = parseInt(formData.package);
-  const gstAmount = calculateGST(baseAmount);
-  const totalAmount = baseAmount + gstAmount;
+  const totalAmount = parseInt(formData.package);
 
   const validateForm = (): boolean => {
     if (!formData.name || !formData.number || !formData.address) {
@@ -202,7 +198,7 @@ const BookingForm = () => {
         amount: orderData.amount,
         currency: orderData.currency,
         name: "",
-        description: `Package ₹${formData.package} + GST`,
+        description: `Event Ticket — ₹${formData.package}`,
         order_id: orderData.orderId,
         handler: async function (response: any) {
           try {
@@ -408,14 +404,7 @@ const BookingForm = () => {
 
             {formData.paymentMode === "online" && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="bg-secondary/30 rounded-lg p-4 border border-border/50">
-                <h4 className="font-semibold mb-3">Payment Summary</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-muted-foreground">Package Amount</span><span className="font-medium">₹{baseAmount}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">GST (18%)</span><span className="font-medium">₹{gstAmount}</span></div>
-                  <div className="border-t border-border/50 pt-2 mt-2">
-                    <div className="flex justify-between text-base"><span className="font-semibold">Total Payable</span><span className="font-bold text-primary">₹{totalAmount}</span></div>
-                  </div>
-                </div>
+                <div className="flex justify-between text-base"><span className="font-semibold">Total Payable</span><span className="font-bold text-primary">₹{totalAmount}</span></div>
               </motion.div>
             )}
 
