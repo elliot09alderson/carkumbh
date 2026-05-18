@@ -3,6 +3,12 @@ import razorpay from '../config/razorpay.js';
 import Booking from '../models/Booking.js';
 import SiteConfig from '../models/SiteConfig.js';
 
+// Calculate GST (18% on base amount)
+const calculateGST = (baseAmount) => {
+  const gst = baseAmount * 0.18; // 18% GST
+  return Math.round(gst); // Round to nearest rupee
+};
+
 // Generate unique 6-character token
 const generateToken = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -49,13 +55,22 @@ export const createOrder = async (req, res) => {
     }
 
     const baseAmount = parseInt(packageAmount);
+    const gstAmount = calculateGST(baseAmount);
+    const totalAmount = baseAmount + gstAmount;
 
     // Create Razorpay order
     const options = {
-      amount: baseAmount * 100, // Razorpay expects amount in paise
+      amount: totalAmount * 100, // Razorpay expects amount in paise
       currency: 'INR',
       receipt: `receipt_${Date.now()}`,
-      notes: { name, number, address, package: packageAmount },
+      notes: {
+        name,
+        number,
+        address,
+        package: packageAmount,
+        baseAmount: baseAmount.toString(),
+        gstAmount: gstAmount.toString(),
+      },
     };
 
     const order = await razorpay.orders.create(options);
@@ -66,8 +81,8 @@ export const createOrder = async (req, res) => {
       amount: order.amount,
       currency: order.currency,
       baseAmount,
-      gstAmount: 0,
-      totalAmount: baseAmount,
+      gstAmount,
+      totalAmount,
     });
   } catch (error) {
     console.error('Create order error:', error);
@@ -130,7 +145,10 @@ export const verifyPayment = async (req, res) => {
       }
     }
 
+    // Calculate amounts for storage
     const baseAmount = parseInt(packageAmount);
+    const gstAmount = calculateGST(baseAmount);
+    const totalAmount = baseAmount + gstAmount;
 
     // Create booking
     const booking = await Booking.create({
@@ -143,8 +161,8 @@ export const verifyPayment = async (req, res) => {
       isPaid: true,
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id,
-      gstAmount: 0,
-      totalAmountPaid: baseAmount,
+      gstAmount,
+      totalAmountPaid: totalAmount,
     });
 
     res.status(201).json({
@@ -174,11 +192,16 @@ export const getPriceBreakdown = async (req, res) => {
     }
 
     const baseAmount = parseInt(packageAmount);
+    const gstAmount = calculateGST(baseAmount);
+    const totalAmount = baseAmount + gstAmount;
 
     res.status(200).json({
       baseAmount,
-      gstAmount: 0,
-      totalAmount: baseAmount,
+      gstAmount,
+      totalAmount,
+      breakdown: {
+        gst: gstAmount,
+      },
     });
   } catch (error) {
     console.error('Price breakdown error:', error);
