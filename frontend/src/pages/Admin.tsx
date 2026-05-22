@@ -38,6 +38,7 @@ import {
   Loader2,
   ScanLine,
   CheckCircle2,
+  Download,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -848,6 +849,30 @@ const Admin = () => {
     }
   };
 
+  const downloadBookingTicket = async (booking: Booking) => {
+    const qrUrl = await QRCode.toDataURL(booking.token, {
+      width: 300, margin: 2,
+      color: { dark: '#000000', light: '#ffffff' },
+      errorCorrectionLevel: 'H',
+    });
+    const dataUrl = await drawTicketCanvas(booking.token, qrUrl, booking.package);
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile && navigator.share) {
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], `ticket-${booking.token}.png`, { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: `Ticket — ${booking.token}` });
+        return;
+      }
+    }
+    const link = document.createElement('a');
+    link.download = `ticket-${booking.token}.png`;
+    link.href = dataUrl;
+    link.click();
+  };
+
   const handleBulkDownload = async () => {
     if (bulkQrTickets.length === 0) return;
     setIsBulkDownloading(true);
@@ -1126,10 +1151,19 @@ const Admin = () => {
                             {new Date(booking.createdAt).toLocaleString()}
                           </p>
                         </div>
-                        <div className="flex items-center justify-end">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-primary hover:text-primary hover:bg-primary/10"
+                            title="Download Ticket"
+                            onClick={() => downloadBookingTicket(booking)}
+                          >
+                            <Download className="h-5 w-5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             onClick={() => handleDeleteBooking(booking._id)}
                           >
