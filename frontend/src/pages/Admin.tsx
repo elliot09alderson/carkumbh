@@ -855,7 +855,9 @@ const Admin = () => {
       color: { dark: '#000000', light: '#ffffff' },
       errorCorrectionLevel: 'H',
     });
-    const dataUrl = await drawTicketCanvas(booking.token, qrUrl, booking.package);
+    const pkg = eventPackages.find(p => p.price === booking.package);
+    const packageLabel = pkg ? `${pkg.name} — ₹${booking.package}` : `₹${booking.package}`;
+    const dataUrl = await drawTicketCanvas(booking.token, qrUrl, packageLabel);
 
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile && navigator.share) {
