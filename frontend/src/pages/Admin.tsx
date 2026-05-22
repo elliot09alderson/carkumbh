@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAllBookings, togglePaidStatus as apiTogglePaidStatus, Booking, deleteAllBookings as apiDeleteAllBookings, deleteBookingsByPackage as apiDeleteBookingsByPackage, deleteBooking as apiDeleteBooking, bulkCreateBookings, getBulkBookings, deleteBulkBookings } from '@/api/bookings';
+import { getAllBookings, createBooking, togglePaidStatus as apiTogglePaidStatus, Booking, deleteAllBookings as apiDeleteAllBookings, deleteBookingsByPackage as apiDeleteBookingsByPackage, deleteBooking as apiDeleteBooking, bulkCreateBookings, getBulkBookings, deleteBulkBookings } from '@/api/bookings';
 import { getAllStudents, Student } from '@/api/students';
 import {
   getBanner,
@@ -75,12 +75,20 @@ const Admin = () => {
 
   // Bulk QR state
   const [bulkQrCount, setBulkQrCount] = useState<string>('10');
+  const [bulkQrPackage, setBulkQrPackage] = useState<string>('');
   const [bulkQrTickets, setBulkQrTickets] = useState<{ id: string; token: string; package: string; qrUrl: string }[]>([]);
   const [isBulkGenerating, setIsBulkGenerating] = useState(false);
   const [isBulkDownloading, setIsBulkDownloading] = useState(false);
   const [isBulkLoading, setIsBulkLoading] = useState(false);
   const [selectedBulkIds, setSelectedBulkIds] = useState<Set<string>>(new Set());
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
+
+  // Manual booking state
+  const [manualName, setManualName] = useState('');
+  const [manualPhone, setManualPhone] = useState('');
+  const [manualAddress, setManualAddress] = useState('');
+  const [manualPackage, setManualPackage] = useState('');
+  const [isManualCreating, setIsManualCreating] = useState(false);
 
   // Ad Banners state
   const [adSlides, setAdSlides] = useState<AdSlide[]>([]);
@@ -794,13 +802,68 @@ const Admin = () => {
     if (!count || count < 1 || count > 500) return;
     setIsBulkGenerating(true);
     try {
-      const { tokens } = await bulkCreateBookings(count, 'Bulk Ticket', 'General');
+      const pkg = eventPackages.find(p => p.price === bulkQrPackage);
+      const pkgLabel = pkg ? pkg.name : 'General';
+      const pkgPrice = bulkQrPackage || 'General';
+      const { tokens } = await bulkCreateBookings(count, pkgLabel, pkgPrice);
       toast({ title: 'Success', description: `${tokens.length} tickets created` });
       await loadBulkTickets();
     } catch (e: any) {
       toast({ title: 'Error', description: e.response?.data?.message || 'Failed to generate tickets', variant: 'destructive' });
     } finally {
       setIsBulkGenerating(false);
+    }
+  };
+
+  const handleManualBooking = async () => {
+    if (!manualName.trim() || !manualPhone.trim() || !manualPackage) {
+      toast({ title: 'Missing fields', description: 'Please fill name, phone and package', variant: 'destructive' });
+      return;
+    }
+    if (!/^\d{10}$/.test(manualPhone.trim())) {
+      toast({ title: 'Invalid phone', description: 'Phone must be 10 digits', variant: 'destructive' });
+      return;
+    }
+    setIsManualCreating(true);
+    try {
+      const booking = await createBooking({
+        name: manualName.trim(),
+        number: manualPhone.trim(),
+        address: manualAddress.trim() || 'Admin Created',
+        package: manualPackage,
+        paymentMode: 'cash',
+        screenshot: null,
+      });
+      // Mark as paid immediately
+      await apiTogglePaidStatus(booking._id);
+      toast({ title: 'Booking created!', description: `Token: ${booking.token}` });
+
+      // Generate and download ticket
+      const qrUrl = await QRCode.toDataURL(booking.token, { width: 300, margin: 2, color: { dark: '#000000', light: '#ffffff' }, errorCorrectionLevel: 'H' });
+      const pkg = eventPackages.find(p => p.price === manualPackage);
+      const packageLabel = pkg ? `${pkg.name} — ₹${manualPackage}` : `₹${manualPackage}`;
+      const dataUrl = await drawTicketCanvas(booking.token, qrUrl, packageLabel);
+
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile && navigator.share) {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const file = new File([blob], `ticket-${booking.token}.png`, { type: 'image/png' });
+        if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], title: `Ticket — ${booking.token}` }); }
+      } else {
+        const link = document.createElement('a');
+        link.download = `ticket-${booking.token}.png`;
+        link.href = dataUrl;
+        link.click();
+      }
+
+      // Reset form & refresh bookings
+      setManualName(''); setManualPhone(''); setManualAddress(''); setManualPackage('');
+      setBookings(prev => [{ ...booking, isPaid: true }, ...prev]);
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.response?.data?.message || 'Failed to create booking', variant: 'destructive' });
+    } finally {
+      setIsManualCreating(false);
     }
   };
 
@@ -1787,21 +1850,57 @@ const Admin = () => {
                 <p className="text-muted-foreground text-sm mt-1">Generate and download multiple event tickets. All tickets are saved to the database and scannable.</p>
               </div>
 
-              {/* Generate + Download controls */}
+              {/* Manual Booking */}
+              <Card className="p-6 bg-card/60 border-primary/30 border">
+                <h3 className="text-base font-bold mb-4 text-primary">Create Manual Booking & Download Ticket</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase text-muted-foreground">Customer Name</label>
+                    <Input value={manualName} onChange={e => setManualName(e.target.value)} placeholder="Full name" className="bg-card/50" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase text-muted-foreground">Phone Number</label>
+                    <Input value={manualPhone} onChange={e => setManualPhone(e.target.value.replace(/\D/g,'').slice(0,10))} placeholder="10 digit number" className="bg-card/50" maxLength={10} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase text-muted-foreground">Address (optional)</label>
+                    <Input value={manualAddress} onChange={e => setManualAddress(e.target.value)} placeholder="City / address" className="bg-card/50" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase text-muted-foreground">Package</label>
+                    <select value={manualPackage} onChange={e => setManualPackage(e.target.value)} className="w-full h-10 rounded-md border border-input bg-card/50 px-3 text-sm">
+                      <option value="">Select package</option>
+                      {eventPackages.map(pkg => (
+                        <option key={pkg.price} value={pkg.price}>₹{pkg.price} — {pkg.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <Button onClick={handleManualBooking} disabled={isManualCreating} className="gap-2">
+                  {isManualCreating ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating...</> : <><Download className="h-4 w-4" /> Create Booking & Download Ticket</>}
+                </Button>
+              </Card>
+
+              {/* Bulk Generate + Download controls */}
               <Card className="p-6 bg-card/60 border-border/50">
+                <h3 className="text-base font-bold mb-4">Bulk Generate by Package</h3>
                 <div className="flex flex-col sm:flex-row gap-4 items-end flex-wrap">
-                  <div className="flex-1 min-w-[180px] space-y-1.5">
+                  <div className="flex-1 min-w-[160px] space-y-1.5">
+                    <label className="text-sm font-semibold">Package</label>
+                    <select value={bulkQrPackage} onChange={e => setBulkQrPackage(e.target.value)} className="w-full h-11 rounded-md border border-input bg-card/50 px-3 text-sm">
+                      <option value="">No package (General)</option>
+                      {eventPackages.map(pkg => (
+                        <option key={pkg.price} value={pkg.price}>₹{pkg.price} — {pkg.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex-1 min-w-[140px] space-y-1.5">
                     <label className="text-sm font-semibold">Number of Tickets</label>
                     <Input
-                      type="number"
-                      min={1}
-                      max={500}
-                      value={bulkQrCount}
-                      onChange={(e) => setBulkQrCount(e.target.value)}
-                      placeholder="e.g. 50"
-                      className="bg-card/50 text-lg h-11"
+                      type="number" min={1} max={500}
+                      value={bulkQrCount} onChange={(e) => setBulkQrCount(e.target.value)}
+                      placeholder="e.g. 50" className="bg-card/50 text-lg h-11"
                     />
-                    <p className="text-xs text-muted-foreground">Max 500 per batch</p>
                   </div>
                   <Button
                     onClick={handleBulkGenerate}
